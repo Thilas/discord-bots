@@ -1,0 +1,7 @@
+.*
+build.sh
+copyDevelopmentConfig.ts
+dist/**/*
+docker-compose.yml
+Dockerfile
+node_modules
