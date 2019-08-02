@@ -1,0 +1,3 @@
+# Bots for Discord
+
+Some bots for Discord...
