@@ -1,5 +1,6 @@
 #!/bin/sh
-mode=-d
+mode='-d'
+image='discord-bots'
 while (( "$#" )); do
   case "$1" in
   --image-tag)
@@ -7,11 +8,11 @@ while (( "$#" )); do
     shift
     ;;
   --interactive)
-    mode=-it
+    mode='-it'
     ;;
   --test)
     mode='-it --env NODE_ENV=development --rm'
-    prefix=test-
+    image="test-$image"
     ;;
   *)
     echo "Unknown argument: $1" 1>&2
@@ -20,6 +21,12 @@ while (( "$#" )); do
   shift
 done
 volume="--volume $(pwd)/src/config:/home/node/app/dist/config"
-sudo docker stop ${prefix}discord-bots 2> /dev/null
-sudo docker rm ${prefix}discord-bots 2> /dev/null
-sudo docker run $mode --name ${prefix}discord-bots $volume discord/bots$tag
+imageId="$(docker ps --filter "name=$image" --format '{{.Image}}')"
+if [[ -n "$imageId" ]];
+  tag="$(docker images --filter 'reference=discord/bots' --format '{{.ID}}:{{.Tag}}' | grep "$imageId" | cut -d: -f2)"
+  echo 'Upgrading existing container...'
+  echo "Current image: $tag ($imageId)"
+  sudo docker stop "$image"
+  sudo docker rm "$image"
+fi
+sudo docker run $mode --name "$image" $volume "discord/bots$tag"
