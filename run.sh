@@ -10,6 +10,8 @@ do
   '--interactive'|'-i')
     mode=-it
     ;;
+  '')
+    ;;
   *)
     echo "Unknown argument: $arg" 1>&2
     exit 1
