@@ -1,7 +1,6 @@
 .*
 build.sh
-copyDevelopmentConfig.ts
-dist/**/*
-docker-compose.yml
+dist/
 Dockerfile
-node_modules
+node_modules/
+run.sh
