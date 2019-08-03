@@ -21,12 +21,12 @@ while (( "$#" )); do
   shift
 done
 volume="--volume $(pwd)/src/config:/home/node/app/dist/config"
-imageId="$(docker ps --filter "name=$image" --format '{{.Image}}')"
-if [[ -n "$imageId" ]];
-  tag="$(docker images --filter 'reference=discord/bots' --format '{{.ID}}:{{.Tag}}' | grep "$imageId" | cut -d: -f2)"
+imageId="$(sudo docker ps --filter "name=$image" --format '{{.Image}}')"
+if [[ -n "$imageId" ]]; then
+  tag="$(sudo docker images --filter 'reference=discord/bots' --format '{{.ID}}:{{.Tag}}' | grep "$imageId" | cut -d: -f2)"
   echo 'Upgrading existing container...'
   echo "Current image: $tag ($imageId)"
-  sudo docker stop "$image"
-  sudo docker rm "$image"
+  echo sudo docker stop "$image"
+  echo sudo docker rm "$image"
 fi
 sudo docker run $mode --name "$image" $volume "discord/bots$tag"
