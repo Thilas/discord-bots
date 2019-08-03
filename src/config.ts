@@ -3,9 +3,9 @@ import appProduction from './config/app.production.json';
 import fs from 'fs';
 import path from 'path';
 
-const PRODUCTION = process.env.NODE_ENV === 'production';
+const production = process.env.NODE_ENV === 'production';
 
-export const APP = PRODUCTION ? appProduction : appDevelopment;
+export const app = production ? appProduction : appDevelopment;
 
 export function watch<TIn, TOut>(filename: string, data: TIn, callback: (data: TIn) => TOut) {
   let file = path.resolve(__dirname, 'config', filename);

@@ -1,4 +1,14 @@
-import { APP } from './config';
-import saroumane from './saroumane';
+import { app } from './config';
+import { Saroumane } from './saroumane';
 
-saroumane(APP.saroumane);
+let bots = [
+  new Saroumane(app.saroumane)
+];
+
+process.on('SIGINT', () => {
+  console.log('Closing...');
+  bots.forEach(bot => bot.dispose());
+  process.exit();
+});
+
+console.log('Initialized');
