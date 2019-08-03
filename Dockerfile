@@ -4,8 +4,8 @@ COPY package.json yarn.lock ./
 RUN ["yarn", "install", "--pure-lockfile", "--production"]
 
 FROM base AS builder
-COPY . .
 RUN ["yarn", "install", "--pure-lockfile"]
+COPY . .
 RUN ["yarn", "build"]
 
 FROM base
