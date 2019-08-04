@@ -1,5 +1,6 @@
+import { Saroumane } from './bots/saroumane';
 import { app } from './config';
-import { Saroumane } from './saroumane';
+import { allSettled } from './promise';
 
 let bots = [
   new Saroumane(app.saroumane)
@@ -7,8 +8,9 @@ let bots = [
 
 process.on('SIGINT', () => {
   console.log('Closing...');
-  bots.forEach(bot => bot.dispose());
-  process.exit();
+  allSettled(bots.map(bot => bot.dispose()))
+    .then(() => process.exit());
 });
 
-console.log('Initialized');
+allSettled(bots.map(bot => bot.start()))
+  .finally(() => console.log('Initialized'));

@@ -3,7 +3,7 @@ import discord from 'discord.js';
 export abstract class Bot {
   private readonly client = new discord.Client();
 
-  constructor(name: string, token: string, builder: (client: discord.Client) => void) {
+  protected constructor(name: string, private readonly token: string, builder?: (client: discord.Client) => void) {
     console.log(`[${name}] Starting...`);
     this.client
       .on('disconnect', () => console.log(`[${name}] Disconnected`))
@@ -11,11 +11,16 @@ export abstract class Bot {
       .on('ready', () => console.log(`[${name}] Logged in as ${this.client.user.tag}!`))
       .on('reconnecting', () => console.log(`[${name}] Reconnecting...`))
       .on('warn', info => console.warn(`[${name}] ${info}`));
-    builder(this.client);
-    this.client.login(token);
+    if (builder) {
+      builder(this.client);
+    }
   }
 
-  dispose() {
-    this.client.destroy();
+  public async start() {
+    await this.client.login(this.token);
+  }
+
+  public async dispose() {
+    await this.client.destroy();
   }
 }

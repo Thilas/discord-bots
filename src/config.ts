@@ -1,7 +1,7 @@
-import appDevelopment from './config/app.development.json';
-import appProduction from './config/app.production.json';
 import fs from 'fs';
 import path from 'path';
+import appDevelopment from './config/app.development.json';
+import appProduction from './config/app.production.json';
 
 const production = process.env.NODE_ENV === 'production';
 

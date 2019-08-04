@@ -1,6 +1,6 @@
+import { watch } from '../config';
+import saroumane from '../config/saroumane.json';
 import { Bot } from './bot';
-import { watch } from './config';
-import saroumane from './config/saroumane.json';
 
 const name = 'saroumane';
 
