@@ -12,7 +12,7 @@ while (( "$#" )); do
     ;;
   --test)
     mode='-it --env NODE_ENV=development --rm'
-    image="test-$image"
+    image="$image-test"
     ;;
   *)
     echo "Unknown argument: $1" 1>&2
@@ -20,7 +20,6 @@ while (( "$#" )); do
   esac
   shift
 done
-volume="--volume $(pwd)/src/config:/home/node/app/dist/config"
 imageId="$(sudo docker ps --filter "name=$image" --format '{{.Image}}')"
 if [[ -n "$imageId" ]]; then
   echo 'Upgrading existing container...'
@@ -28,4 +27,4 @@ if [[ -n "$imageId" ]]; then
   sudo docker stop "$image"
   sudo docker rm "$image"
 fi
-sudo docker run $mode --name "$image" $volume "discord/bots$tag"
+sudo docker run $mode --name "$image" --volume "$(pwd)/src/config:/home/node/app/dist/config" "discord/bots$tag"
