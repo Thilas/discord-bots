@@ -1,2 +1,2 @@
 #!/bin/sh
-time sudo docker build -t discord/bots:latest .
+time sudo docker build --pull -t discord/bots:latest .
