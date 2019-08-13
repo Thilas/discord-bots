@@ -1,7 +1,7 @@
 {
-  "answers": [
-    "answer 1",
-    "answer 2",
-    "answer 3"
-  ]
+  "answersYes": [],
+  "answersNo": [],
+  "answersDontKnow": [],
+  "answersWho": [],
+  "answersPlayers": []
 }

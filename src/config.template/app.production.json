@@ -1,6 +1,7 @@
 {
   "saroumane": {
     "token": "production token",
-    "trigger": "production trigger"
+    "triggerTellMe": "production trigger",
+    "triggerWho": "production trigger"
   }
 }

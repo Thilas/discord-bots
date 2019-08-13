@@ -1,6 +1,7 @@
 {
   "saroumane": {
     "token": "development token",
-    "trigger": "development trigger"
+    "triggerTellMe": "development trigger",
+    "triggerWho": "development trigger"
   }
 }
