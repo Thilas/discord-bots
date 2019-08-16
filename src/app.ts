@@ -2,7 +2,7 @@ import { Saroumane } from './bots/saroumane';
 import { app } from './config';
 import { allSettled } from './promise';
 
-let bots = [
+const bots = [
   new Saroumane(app.tokens.saroumane)
 ];
 
@@ -13,4 +13,4 @@ process.on('SIGINT', () => {
 });
 
 allSettled(bots.map(bot => bot.start()))
-  .finally(() => console.log('Initialized'));
+  .then(() => console.log('Initialized'));
