@@ -1,0 +1,29 @@
+{
+  "triggers": {
+    "tellMe": "$dis-moi",
+    "who": "$qui"
+  },
+  "answers": {
+    "tellMe": [
+      [
+        "oui.",
+        "bien sûr."
+      ],
+      [
+        "non.",
+        "certainement pas."
+      ],
+      [
+        "aucune idée.",
+        "je ne sais pas."
+      ]
+    ],
+    "who": [
+      "quelqu'un"
+    ],
+    "players": [
+      "untel",
+      "unetelle"
+    ]
+  }
+}

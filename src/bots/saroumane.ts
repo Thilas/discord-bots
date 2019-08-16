@@ -1,39 +1,31 @@
-import { watch } from '../config';
-import saroumane from '../config/saroumane.json';
+import { loadAndwatch } from '../config';
+import saroumaneConfig from '../config/saroumane.json';
 import { Bot } from './bot';
 import * as Utils from '../utils';
 
-const name = 'saroumane';
-
 export class Saroumane extends Bot {
-  private answers = watch('saroumane.json', saroumane, json => {
-    console.log(`[${name}] Available answers: yes=${json.answersYes.length}, no=${json.answersNo.length}, other=${json.answersDontKnow.length}, players=${json.answersPlayers.length}`);
-    return {
-      yes: json.answersYes,
-      no: json.answersNo,
-      other: json.answersDontKnow,
-      players: json.answersPlayers
-    };
-  }, data => {
-    this.answers = data;
+  private config = loadAndwatch('saroumane.json', saroumaneConfig, config => {
+    this.log(`Triggers: tellMe='${config.triggers.tellMe}', who='${config.triggers.who}'`);
+    let tellMeAnswers = config.answers.tellMe.map(value => value.length);
+    this.log(`Answers: tellMe=[${tellMeAnswers.join(', ')}], who=${config.answers.who.length}, players=${config.answers.players.length}`);
+    config.triggers.tellMe = config.triggers.tellMe.toUpperCase();
+    config.triggers.who = config.triggers.who.toUpperCase();
+    this.config = config;
   });
 
-  constructor(config: { token: string, triggerTellMe: string, triggerWho: string }) {
-    super(name, config.token, client => {
-      config.triggerTellMe = config.triggerTellMe.toUpperCase();
-      config.triggerWho = config.triggerWho.toUpperCase();
-
+  constructor(token: string) {
+    super(token, client => {
       client.on('message', message => {
         let msg = message.content.toUpperCase();
 
-        if (msg.substring(0, config.triggerTellMe.length) === config.triggerTellMe) {
+        if (msg.substring(0, this.config.triggers.tellMe.length) === this.config.triggers.tellMe) {
           let answer = this.getAnswerTellMe();
-          console.log(`[${name}] Reply "${answer}" to "${message.content}" from ${message.author.tag}`);
+          this.log(`Reply "${answer}" to "${message.content}" from ${message.author.tag}`);
           message.reply(answer);
         }
-        else if (msg.substring(0, config.triggerWho.length) === config.triggerWho) {
+        else if (msg.substring(0, this.config.triggers.who.length) === this.config.triggers.who) {
           let answer = this.getAnswerWho();
-          console.log(`[${name}] Reply "${answer}" to "${message.content}" from ${message.author.tag}`);
+          this.log(`Reply "${answer}" to "${message.content}" from ${message.author.tag}`);
           message.reply(answer);
         }
       });
@@ -41,18 +33,11 @@ export class Saroumane extends Bot {
   }
 
   private getAnswerTellMe() {
-    let answerType = Utils.roll(3);
-    switch (answerType) {
-      case 1:
-        return this.answers.yes[Utils.roll(this.answers.yes.length) - 1];
-      case 2:
-        return this.answers.no[Utils.roll(this.answers.no.length) - 1];
-      default:
-        return this.answers.other[Utils.roll(this.answers.other.length) - 1];
-    }
+    let answers = this.config.answers.tellMe[Utils.roll(this.config.answers.tellMe.length) - 1];
+    return answers[Utils.roll(answers.length) - 1];
   }
 
   private getAnswerWho() {
-    return this.answers.players[Utils.roll(this.answers.players.length) - 1];
+    return this.config.answers.players[Utils.roll(this.config.answers.players.length) - 1];
   }
 }

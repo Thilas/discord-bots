@@ -61,7 +61,7 @@ typings/
 .env
 
 # Configuration files
-src/config/
+src/config/*/
 
 # next.js build output
 .next

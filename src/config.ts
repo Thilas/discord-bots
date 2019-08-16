@@ -1,33 +1,40 @@
 import fs from 'fs';
 import path from 'path';
-import appDevelopment from './config/app.development.json';
-import appProduction from './config/app.production.json';
+import appConfig from './config/app.json';
 
-const production = process.env.NODE_ENV === 'production';
+const configName = process.env.NODE_ENV || 'development';
 
-export const app = production ? appProduction : appDevelopment;
+export const app = load('app.json', appConfig);
 
-export function watch<TIn, TOut>(filename: string, data: TIn, callback: (json: TIn) => TOut, assign: (data: TOut) => void) {
-  let file = path.resolve(__dirname, 'config', filename);
-  fs.watch(file, event => {
+function getConfigMetadata(filename: string) {
+  let file = path.resolve(__dirname, 'config', configName, filename);
+  let overridden = fs.existsSync(file);
+  if (!overridden) {
+    file = path.resolve(__dirname, 'config', filename);
+  }
+  return { overridden, file };
+}
+
+export function load<T>(filename: string, config: T) {
+  return loadConfig(filename, config);
+}
+
+export function loadAndwatch<T>(filename: string, config: T, apply: (config: T) => void) {
+  let configMetadata = getConfigMetadata(filename);
+  fs.watch(configMetadata.file, event => {
     if (event === 'change') {
-      fs.readFile(file, (err, data) => {
+      fs.readFile(configMetadata.file, (err, data) => {
         if (err) {
           console.error(`Error while reading ${filename}: ${err}`);
         }
         if (data.length) {
           console.log(`Refreshing ${filename}...`);
           try {
-            let json = JSON.parse(data.toString());
+            config = JSON.parse(data.toString());
             try {
-              let out = callback(json);
-              try {
-                assign(out);
-              } catch (error) {
-                console.error(`Error while assigning ${filename}: ${error}`);
-              }
+              apply(config);
             } catch (error) {
-              console.error(`Error while loading ${filename}: ${error}`);
+              console.error(`Error while applying ${filename}: ${error}`);
             }
           } catch (error) {
             console.error(`Error while parsing ${filename}: ${error}`);
@@ -36,5 +43,17 @@ export function watch<TIn, TOut>(filename: string, data: TIn, callback: (json: T
       });
     }
   });
-  return callback(data);
+  config = loadConfig(filename, config, configMetadata);
+  apply(config);
+  return config;
+}
+
+function loadConfig<T>(filename: string, config: T, configMetadata = getConfigMetadata(filename)) {
+  console.log(`Loading ${filename} from ${configMetadata.file}...`);
+  if (!configMetadata.overridden) {
+    return config;
+  }
+  let data = fs.readFileSync(configMetadata.file);
+  config = JSON.parse(data.toString());
+  return config;
 }

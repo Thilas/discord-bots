@@ -1,19 +1,18 @@
 import discord from 'discord.js';
 
 export abstract class Bot {
+  private readonly name = this.constructor.name;
   private readonly client = new discord.Client();
 
-  protected constructor(name: string, private readonly token: string, builder?: (client: discord.Client) => void) {
-    console.log(`[${name}] Starting...`);
+  protected constructor(private readonly token: string, builder: (client: discord.Client) => void) {
+    this.log('Starting...');
     this.client
-      .on('disconnect', () => console.log(`[${name}] Disconnected`))
-      .on('error', error => console.error(`[${name}] ${error}`))
-      .on('ready', () => console.log(`[${name}] Logged in as ${this.client.user.tag}!`))
-      .on('reconnecting', () => console.log(`[${name}] Reconnecting...`))
-      .on('warn', info => console.warn(`[${name}] ${info}`));
-    if (builder) {
-      builder(this.client);
-    }
+      .on('disconnect', () => this.log('Disconnected'))
+      .on('error', error => this.error(`Error: ${error}`))
+      .on('ready', () => this.log(`Logged in as ${this.client.user.tag}!`))
+      .on('reconnecting', () => this.log('Reconnecting...'))
+      .on('warn', info => this.error(`Warning: ${info}`))
+    builder(this.client);
   }
 
   public async start() {
@@ -22,5 +21,13 @@ export abstract class Bot {
 
   public async dispose() {
     await this.client.destroy();
+  }
+
+  protected log(message?: any, ...optionalParams: any[]) {
+    console.log(`[${this.name}] ${message}`, ...optionalParams);
+  }
+
+  private error(message?: any, ...optionalParams: any[]) {
+    console.error(`[${this.name}] ${message}`, ...optionalParams);
   }
 }

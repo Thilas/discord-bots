@@ -3,7 +3,7 @@ import { app } from './config';
 import { allSettled } from './promise';
 
 let bots = [
-  new Saroumane(app.saroumane)
+  new Saroumane(app.tokens.saroumane)
 ];
 
 process.on('SIGINT', () => {
