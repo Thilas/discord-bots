@@ -1,7 +1,9 @@
 {
   "triggers": {
     "tellMe": "$dis-moi",
-    "who": "$qui"
+    "who": "$qui",
+    "whichPlayer": "$quel joueur",
+    "whichCharacter": "$quel perso"
   },
   "answers": {
     "tellMe": [
@@ -19,11 +21,20 @@
       ]
     ],
     "who": [
-      "quelqu'un"
+      [
+        "réponse positive"
+      ],
+      [
+        "réponse négative"
+      ]
     ],
     "players": [
-      "untel",
-      "unetelle"
+      "joueur 1",
+      "joueur 2"
+    ],
+    "characters": [
+      "perso 1",
+      "perso 2"
     ]
   }
 }
