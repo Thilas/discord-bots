@@ -8,23 +8,27 @@ export class Saroumane extends Bot {
     this.log(`Triggers: tellMe='${config.triggers.tellMe}',
       who='${config.triggers.who}',
       players='${config.triggers.whichPlayer}',
-      characters='${config.triggers.whichCharacter}'`);
+      characters='${config.triggers.whichCharacter}',
+      songs='${config.triggers.bawdySong}'`);
 
     const tellMeAnswers = config.answers.tellMe.map(value => value.length);
     const whoAnswers = config.answers.who.map(value => value.length);
     const whoPlayers = config.answers.players;
     const whoCharacters = config.answers.characters;
+    const bawdySongs = config.songs;
 
 
     this.log(`Answers: tellMe=[${tellMeAnswers.join(', ')}],
       who=[${whoAnswers.join(', ')}],
       players = [${whoPlayers.length}],
-      characters = [${whoCharacters.length}]`);
+      characters = [${whoCharacters.length}],
+      songs = [${bawdySongs.length}]`);
 
     config.triggers.tellMe = config.triggers.tellMe.toUpperCase();
     config.triggers.who = config.triggers.who.toUpperCase();
     config.triggers.whichPlayer = config.triggers.whichPlayer.toUpperCase();
     config.triggers.whichCharacter = config.triggers.whichCharacter.toUpperCase();
+    config.triggers.bawdySong = config.triggers.bawdySong.toUpperCase();
     this.config = config;
   });
 
@@ -56,8 +60,18 @@ export class Saroumane extends Bot {
           this.log(`Reply "${answer}" to "${message.content}" from ${message.author.tag}`);
           message.reply(answer);
         }
+
+        else if (msg.substring(0, this.config.triggers.bawdySong.length) === this.config.triggers.bawdySong) {
+          const song = this.getSong();
+          this.log(`Reply "${song}" to "${message.content}" from ${message.author.tag}`);
+          message.reply(song);
+        }
       });
     });
+  }
+
+  private getSong() {
+    return this.config.songs[roll(this.config.songs.length) - 1];
   }
 
   private getAnswerTellMe() {

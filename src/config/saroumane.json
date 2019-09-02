@@ -3,7 +3,8 @@
     "tellMe": "$dis-moi",
     "who": "$qui",
     "whichPlayer": "$quel joueur",
-    "whichCharacter": "$quel perso"
+    "whichCharacter": "$quel perso",
+    "bawdySong": "$chante-moi une chanson à trous"
   },
   "answers": {
     "tellMe": [
@@ -36,5 +37,9 @@
       "perso 1",
       "perso 2"
     ]
-  }
+  },
+  "songs": [
+    "chanson 1",
+    "chanson 2"
+  ]
 }
