@@ -33,24 +33,24 @@ export function load<T>(filename: string, config: T) {
  * using a possible overriden file if it exists
  * (i.e `NODE_ENV`/`filename`).
  * @param filename File name of the config file.
- * @param config Content of the main config file.
+ * @param data Content of the main config file.
  * @param apply Callback to apply changes of the config file.
  * @returns The relevant config.
  */
-export function loadAndWatch<T>(filename: string, config: T, apply: (config: T) => void) {
+export function loadAndWatch<TIn, TOut>(filename: string, data: TIn, apply: (data: TIn) => TOut) {
   const configMetadata = getConfigMetadata(filename);
   fs.watch(configMetadata.file, event => {
     if (event === 'change') {
-      fs.readFile(configMetadata.file, (err, data) => {
+      fs.readFile(configMetadata.file, (err, content) => {
         if (err) {
           console.error(`Error while reading ${filename}: ${err}`);
         }
-        if (data.length) {
+        if (content.length) {
           console.log(`Refreshing ${filename}...`);
           try {
-            config = JSON.parse(data.toString());
+            data = JSON.parse(content.toString());
             try {
-              apply(config);
+              apply(data);
             } catch (error) {
               console.error(`Error while applying ${filename}: ${error}`);
             }
@@ -61,9 +61,8 @@ export function loadAndWatch<T>(filename: string, config: T, apply: (config: T) 
       });
     }
   });
-  config = loadConfig(filename, config, configMetadata);
-  apply(config);
-  return config;
+  data = loadConfig(filename, data, configMetadata);
+  return apply(data);
 }
 
 function loadConfig<T>(filename: string, config: T, configMetadata = getConfigMetadata(filename)) {

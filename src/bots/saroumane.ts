@@ -1,21 +1,64 @@
 import { Bot } from './bot';
 import { loadAndWatch } from '../config';
-import saroumaneConfig from '../config/saroumane.json';
+import saroumaneData from '../config/saroumane.json';
 import { roll } from '../utils';
+import { cpus } from 'os';
+import { stringify } from 'querystring';
+
+class Configuration {
+  constructor(public readonly Prefix: string, public readonly Commands: Command[]) {
+  }
+}
+
+class Command {
+  constructor(
+    public readonly Trigger: string,
+    public readonly Answers: any[],
+    public readonly Variables: Map<string, any[]>) {
+  }
+}
+
+function GetList(references: string | string[], lists: Map<string, any[]>) {
+  if (typeof references == 'string') {
+    if (!lists.has(references)) {
+      throw 'Unknown list: ' + references;
+    }
+    return lists.get(references);
+  } else {
+    let result: any[] = [];
+    references.forEach(reference => {
+      if (!lists.has(reference)) {
+        throw 'Unknown list: ' + reference;
+      }
+      result.concat(lists.get(reference));
+    });
+    return result;
+  }
+}
 
 export class Saroumane extends Bot {
-  private config = loadAndWatch('saroumane.json', saroumaneConfig, config => {
-    this.log(`Triggers: tellMe='${config.triggers.tellMe}',
-      who='${config.triggers.who}',
-      players='${config.triggers.whichPlayer}',
-      characters='${config.triggers.whichCharacter}',
-      songs='${config.triggers.bawdySong}'`);
+  private config: Configuration = loadAndWatch('saroumane.json', saroumaneData, data => {
 
-    const tellMeAnswers = config.answers.tellMe.map(value => value.length);
-    const whoAnswers = config.answers.who.map(value => value.length);
-    const whoPlayers = config.answers.players;
-    const whoCharacters = config.answers.characters;
-    const bawdySongs = config.songs;
+    const commands = data.commands.map(c => {
+      const answers = GetList(c.answers, saroumaneData.lists);
+      return new Command(data.prefix + c.trigger, answers, c.variables);
+    });
+    this.config = new Configuration(data.prefix, commands);
+    const config = this.config;
+    return config;
+
+
+    this.log(`Triggers: tellMe='${data.triggers.tellMe}',
+      who='${data.triggers.who}',
+      players='${data.triggers.whichPlayer}',
+      characters='${data.triggers.whichCharacter}',
+      songs='${data.triggers.bawdySong}'`);
+
+    const tellMeAnswers = data.answers.tellMe.map(value => value.length);
+    const whoAnswers = data.answers.who.map(value => value.length);
+    const whoPlayers = data.answers.players;
+    const whoCharacters = data.answers.characters;
+    const bawdySongs = data.songs;
 
 
     this.log(`Answers: tellMe=[${tellMeAnswers.join(', ')}],
@@ -24,12 +67,11 @@ export class Saroumane extends Bot {
       characters = [${whoCharacters.length}],
       songs = [${bawdySongs.length}]`);
 
-    config.triggers.tellMe = config.triggers.tellMe.toUpperCase();
-    config.triggers.who = config.triggers.who.toUpperCase();
-    config.triggers.whichPlayer = config.triggers.whichPlayer.toUpperCase();
-    config.triggers.whichCharacter = config.triggers.whichCharacter.toUpperCase();
-    config.triggers.bawdySong = config.triggers.bawdySong.toUpperCase();
-    this.config = config;
+    data.triggers.tellMe = data.triggers.tellMe.toUpperCase();
+    data.triggers.who = data.triggers.who.toUpperCase();
+    data.triggers.whichPlayer = data.triggers.whichPlayer.toUpperCase();
+    data.triggers.whichCharacter = data.triggers.whichCharacter.toUpperCase();
+    data.triggers.bawdySong = data.triggers.bawdySong.toUpperCase();
   });
 
   constructor(token: string) {

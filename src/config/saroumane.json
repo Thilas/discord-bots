@@ -1,45 +1,73 @@
 {
-  "triggers": {
-    "tellMe": "$dis-moi",
-    "who": "$qui",
-    "whichPlayer": "$quel joueur",
-    "whichCharacter": "$quel perso",
-    "bawdySong": "$chante-moi une chanson à trous"
-  },
-  "answers": {
+  "prefix": "$",
+  "commands": [
+    {
+      "trigger": "dis-moi",
+      "answers": "tellMe",
+      "variables": null
+    },
+    {
+      "trigger": "quel joueur",
+      "answers": "whichAnswer",
+      "variables": {
+        "*": "players"
+      }
+    },
+    {
+      "trigger": "quel perso",
+      "answers": "whichAnswer",
+      "variables": {
+        "*": "characters"
+      }
+    },
+    {
+      "trigger": "qui",
+      "answers": "whichAnswer",
+      "variables": {
+        "*": [
+          "players",
+          "characters"
+        ]
+      }
+    },
+    {
+      "trigger": "chante-moi une chanson à trous",
+      "answers": "songs",
+      "variables": null
+    }
+    {
+      "trigger": "fais-moi un compliment",
+      "answers": "compliments",
+      "variables": {
+        "*": [
+          "players",
+          "characters"
+        ]
+      }
+    }
+  ],
+  "lists": {
     "tellMe": [
       [
-        "oui.",
-        "bien sûr."
-      ],
-      [
-        "non.",
-        "certainement pas."
-      ],
-      [
-        "aucune idée.",
-        "je ne sais pas."
-      ]
-    ],
-    "who": [
-      [
-        "réponse positive"
-      ],
-      [
-        "réponse négative"
+        ""
       ]
     ],
     "players": [
-      "joueur 1",
-      "joueur 2"
+      ""
     ],
     "characters": [
-      "perso 1",
-      "perso 2"
+      ""
+    ],
+    "whichAnswer": [
+      [
+        ""
+      ]
+    ],
+    "songs": [
+      ""
+    ],
+    "compliments": [
+      ""
     ]
-  },
-  "songs": [
-    "chanson 1",
-    "chanson 2"
-  ]
+  }
 }
