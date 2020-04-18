@@ -72,8 +72,9 @@ export class Saroumane extends Bot {
         }
         else if (msg.substring(0, this.config.triggers.makeMeSweat.length) === this.config.triggers.makeMeSweat) {
           const fit = this.getFit();
+          const maso = message.content.substring(this.config.triggers.makeMeSweat.length).trim();
           this.log(`Reply "${fit}" to "${message.content}" from ${message.author.tag}`);
-          message.reply(fit);
+          message.channel.send(maso + ", " + fit);
         }
       });
     });
@@ -121,7 +122,7 @@ export class Saroumane extends Bot {
     }
 
     else if (rollMalus < 11) {
-      return "oyez, oyez ! Tout le monde doit faire " + exercise + " pour " + points.toString() + " point(s)";
+      return "grâce à toi, tout le monde doit faire " + exercise + " pour " + points.toString() + " point(s)";
     }
 
     else {
