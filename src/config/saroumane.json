@@ -4,7 +4,8 @@
     "who": "$qui",
     "whichPlayer": "$quel joueur",
     "whichCharacter": "$quel perso",
-    "bawdySong": "$chante-moi une chanson à trous"
+    "bawdySong": "$chante-moi une chanson à trous",
+    "makeMeSweat": "$fais transpirer"
   },
   "answers": {
     "tellMe": [
@@ -41,5 +42,9 @@
   "songs": [
     "chanson 1",
     "chanson 2"
+  ],
+  "fit": [
+    "fit 1",
+    "fit 2"
   ]
 }

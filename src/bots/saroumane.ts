@@ -9,26 +9,30 @@ export class Saroumane extends Bot {
       who='${config.triggers.who}',
       players='${config.triggers.whichPlayer}',
       characters='${config.triggers.whichCharacter}',
-      songs='${config.triggers.bawdySong}'`);
+      songs='${config.triggers.bawdySong}',
+      fit='${config.triggers.makeMeSweat}'`);
 
     const tellMeAnswers = config.answers.tellMe.map(value => value.length);
     const whoAnswers = config.answers.who.map(value => value.length);
     const whoPlayers = config.answers.players;
     const whoCharacters = config.answers.characters;
     const bawdySongs = config.songs;
+    const fitness = config.fit;
 
 
     this.log(`Answers: tellMe=[${tellMeAnswers.join(', ')}],
       who=[${whoAnswers.join(', ')}],
       players = [${whoPlayers.length}],
       characters = [${whoCharacters.length}],
-      songs = [${bawdySongs.length}]`);
+      songs = [${bawdySongs.length}],
+      fit = [${fitness.length}]`);
 
     config.triggers.tellMe = config.triggers.tellMe.toUpperCase();
     config.triggers.who = config.triggers.who.toUpperCase();
     config.triggers.whichPlayer = config.triggers.whichPlayer.toUpperCase();
     config.triggers.whichCharacter = config.triggers.whichCharacter.toUpperCase();
     config.triggers.bawdySong = config.triggers.bawdySong.toUpperCase();
+    config.triggers.makeMeSweat = config.triggers.makeMeSweat.toUpperCase();
     this.config = config;
   });
 
@@ -66,6 +70,11 @@ export class Saroumane extends Bot {
           this.log(`Reply "${song}" to "${message.content}" from ${message.author.tag}`);
           message.reply(song);
         }
+        else if (msg.substring(0, this.config.triggers.makeMeSweat.length) === this.config.triggers.makeMeSweat) {
+          const fit = this.getFit();
+          this.log(`Reply "${fit}" to "${message.content}" from ${message.author.tag}`);
+          message.reply(fit);
+        }
       });
     });
   }
@@ -102,6 +111,21 @@ export class Saroumane extends Bot {
     return names[roll(names.length) - 1];
   }
 
+  private getFit() {
+    const exercise = this.config.fit[roll(this.config.fit.length) - 1];
+    const points = roll(5);
+    const rollMalus = roll(100);
 
+    if (rollMalus > 89) {
+      return "bravo ! Demande à n'importe qui de faire " + exercise + " pour " + points.toString() + " point(s)";
+    }
 
+    else if (rollMalus < 11) {
+      return "oyez, oyez ! Tout le monde doit faire " + exercise + " pour " + points.toString() + " point(s)";
+    }
+
+    else {
+      return "fais-nous " + exercise + " pour " + points.toString() + " point(s)";
+    }
+  }
 }
