@@ -21,3 +21,26 @@ export function roll(max: number, dices: any = undefined) {
     return result;
   }
 }
+
+export function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function notEmpty<T>(value: T | null | undefined): value is T {
+  return value !== null && value !== undefined;
+}
+
+// export function formatString(format: string, ...args: string[]) {
+export function formatString(format: string, args: any) {
+  return format.replace(/{{|}}|{(\w+)}/g, function (match, name) {
+    if (name) {
+      const value = args[name];
+      return value || match;
+    } else {
+      switch (match) {
+        case "{{": return "{";
+        case "}}": return "}";
+      }
+    }
+  });
+}
