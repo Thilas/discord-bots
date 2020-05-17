@@ -1,4 +1,4 @@
-import discord from 'discord.js';
+import discord from "discord.js";
 
 /** Abstract class for any bot. */
 export abstract class Bot {
@@ -9,14 +9,17 @@ export abstract class Bot {
    * @param token Token of the account to log in with.
    * @param builder Callback to configure the Discord client.
    */
-  protected constructor(private readonly token: string, builder: (client: discord.Client) => void) {
-    this.log('Starting...');
+  protected constructor(
+    private readonly token: string,
+    builder: (client: discord.Client) => void
+  ) {
+    this.log("Starting...");
     this.client
-      .on('disconnect', () => this.log('Disconnected'))
-      .on('error', error => this.error(`Error: ${error}`))
-      .on('ready', () => this.log(`Logged in as ${this.client.user.tag}!`))
-      .on('reconnecting', () => this.log('Reconnecting...'))
-      .on('warn', info => this.error(`Warning: ${info}`))
+      .on("disconnect", () => this.log("Disconnected"))
+      .on("error", (error) => this.error(`Error: ${error}`))
+      .on("ready", () => this.log(`Logged in as ${this.client.user.tag}!`))
+      .on("reconnecting", () => this.log("Reconnecting..."))
+      .on("warn", (info) => this.error(`Warning: ${info}`));
     builder(this.client);
   }
 

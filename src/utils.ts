@@ -15,15 +15,14 @@ export function roll(max: number, dices: any = undefined) {
   if (dices == undefined) {
     const result = Math.floor(Math.random() * max) + 1;
     return result;
-  }
-  else {
+  } else {
     const result = Array(dices).map(() => roll(max));
     return result;
   }
 }
 
 export function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export function notEmpty<T>(value: T | null | undefined): value is T {
@@ -38,8 +37,10 @@ export function formatString(format: string, args: any) {
       return value || match;
     } else {
       switch (match) {
-        case "{{": return "{";
-        case "}}": return "}";
+        case "{{":
+          return "{";
+        case "}}":
+          return "}";
       }
     }
   });

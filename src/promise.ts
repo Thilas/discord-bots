@@ -1,20 +1,17 @@
 /** Represents the result of a resolved Promise. */
-export class ResolvedPromiseResult<T>  {
-  public constructor(public readonly value: T) {
-  }
+export class ResolvedPromiseResult<T> {
+  public constructor(public readonly value: T) {}
 }
 
 /** Represents the result of a rejected Promise. */
 export class RejectedPromiseResult {
-  public constructor(public readonly reason: any) {
-  }
+  public constructor(public readonly reason: any) {}
 }
 
 async function settle<T>(promise: T | PromiseLike<T>) {
   try {
     return new ResolvedPromiseResult(await promise);
-  }
-  catch (reason) {
+  } catch (reason) {
     return new RejectedPromiseResult(reason);
   }
 }

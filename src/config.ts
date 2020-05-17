@@ -1,17 +1,17 @@
-import fs from 'fs';
-import path from 'path';
-import appConfig from './config/app.json';
+import fs from "fs";
+import path from "path";
+import appConfig from "./config/app.json";
 
-const configName = process.env.NODE_ENV || 'development';
+const configName = process.env.NODE_ENV || "development";
 
 /** Global config. */
-export const app = load('app.json', appConfig);
+export const app = load("app.json", appConfig);
 
 function getConfigMetadata(filename: string) {
-  let file = path.resolve(__dirname, 'config', configName, filename);
+  let file = path.resolve(__dirname, "config", configName, filename);
   const overridden = fs.existsSync(file);
   if (!overridden) {
-    file = path.resolve(__dirname, 'config', filename);
+    file = path.resolve(__dirname, "config", filename);
   }
   return { overridden, file };
 }
@@ -37,10 +37,14 @@ export function load<T>(filename: string, config: T) {
  * @param apply Callback to apply changes of the config file.
  * @returns The relevant config.
  */
-export function loadAndWatch<T>(filename: string, config: T, apply: (config: T) => void) {
+export function loadAndWatch<T>(
+  filename: string,
+  config: T,
+  apply: (config: T) => void
+) {
   const configMetadata = getConfigMetadata(filename);
-  fs.watch(configMetadata.file, event => {
-    if (event === 'change') {
+  fs.watch(configMetadata.file, (event) => {
+    if (event === "change") {
       fs.readFile(configMetadata.file, (err, data) => {
         if (err) {
           console.error(`Error while reading ${filename}: ${err}`);
@@ -66,7 +70,11 @@ export function loadAndWatch<T>(filename: string, config: T, apply: (config: T) 
   return config;
 }
 
-function loadConfig<T>(filename: string, config: T, configMetadata = getConfigMetadata(filename)) {
+function loadConfig<T>(
+  filename: string,
+  config: T,
+  configMetadata = getConfigMetadata(filename)
+) {
   console.log(`Loading ${filename} from ${configMetadata.file}...`);
   if (!configMetadata.overridden) {
     return config;

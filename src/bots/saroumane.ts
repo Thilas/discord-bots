@@ -1,10 +1,10 @@
-import { Bot } from './bot';
-import { loadAndWatch } from '../config';
-import saroumaneConfig from '../config/saroumane.json';
-import { roll } from '../utils';
+import { loadAndWatch } from "../config";
+import saroumaneConfig from "../config/saroumane.json";
+import { roll } from "../utils";
+import { Bot } from "./bot";
 
 export class Saroumane extends Bot {
-  private config = loadAndWatch('saroumane.json', saroumaneConfig, config => {
+  private config = loadAndWatch("saroumane.json", saroumaneConfig, (config) => {
     this.log(`Triggers: tellMe='${config.triggers.tellMe}',
       who='${config.triggers.who}',
       players='${config.triggers.whichPlayer}',
@@ -12,16 +12,15 @@ export class Saroumane extends Bot {
       songs='${config.triggers.bawdySong}',
       fit='${config.triggers.makeMeSweat}'`);
 
-    const tellMeAnswers = config.answers.tellMe.map(value => value.length);
-    const whoAnswers = config.answers.who.map(value => value.length);
+    const tellMeAnswers = config.answers.tellMe.map((value) => value.length);
+    const whoAnswers = config.answers.who.map((value) => value.length);
     const whoPlayers = config.answers.players;
     const whoCharacters = config.answers.characters;
     const bawdySongs = config.songs;
     const fitness = config.fit;
 
-
-    this.log(`Answers: tellMe=[${tellMeAnswers.join(', ')}],
-      who=[${whoAnswers.join(', ')}],
+    this.log(`Answers: tellMe=[${tellMeAnswers.join(", ")}],
+      who=[${whoAnswers.join(", ")}],
       players = [${whoPlayers.length}],
       characters = [${whoCharacters.length}],
       songs = [${bawdySongs.length}],
@@ -37,43 +36,66 @@ export class Saroumane extends Bot {
   });
 
   constructor(token: string) {
-    super(token, client => {
-      client.on('message', message => {
+    super(token, (client) => {
+      client.on("message", (message) => {
         const msg = message.content.toUpperCase();
 
-        if (msg.substring(0, this.config.triggers.tellMe.length) === this.config.triggers.tellMe) {
+        if (
+          msg.substring(0, this.config.triggers.tellMe.length) ===
+          this.config.triggers.tellMe
+        ) {
           const answer = this.getAnswerTellMe();
-          this.log(`Reply "${answer}" to "${message.content}" from ${message.author.tag}`);
+          this.log(
+            `Reply "${answer}" to "${message.content}" from ${message.author.tag}`
+          );
           message.reply(answer);
-        }
-
-        else if (msg.substring(0, this.config.triggers.whichPlayer.length) === this.config.triggers.whichPlayer) {
+        } else if (
+          msg.substring(0, this.config.triggers.whichPlayer.length) ===
+          this.config.triggers.whichPlayer
+        ) {
           const answer = this.getAnswerWhichPlayer();
-          this.log(`Reply "${answer}" to "${message.content}" from ${message.author.tag}`);
+          this.log(
+            `Reply "${answer}" to "${message.content}" from ${message.author.tag}`
+          );
           message.reply(answer);
-        }
-
-        else if (msg.substring(0, this.config.triggers.whichCharacter.length) === this.config.triggers.whichCharacter) {
+        } else if (
+          msg.substring(0, this.config.triggers.whichCharacter.length) ===
+          this.config.triggers.whichCharacter
+        ) {
           const answer = this.getAnswerWhichCharacter();
-          this.log(`Reply "${answer}" to "${message.content}" from ${message.author.tag}`);
+          this.log(
+            `Reply "${answer}" to "${message.content}" from ${message.author.tag}`
+          );
           message.reply(answer);
-        }
-
-        else if (msg.substring(0, this.config.triggers.who.length) === this.config.triggers.who) {
+        } else if (
+          msg.substring(0, this.config.triggers.who.length) ===
+          this.config.triggers.who
+        ) {
           const answer = this.getAnswerWho();
-          this.log(`Reply "${answer}" to "${message.content}" from ${message.author.tag}`);
+          this.log(
+            `Reply "${answer}" to "${message.content}" from ${message.author.tag}`
+          );
           message.reply(answer);
-        }
-
-        else if (msg.substring(0, this.config.triggers.bawdySong.length) === this.config.triggers.bawdySong) {
+        } else if (
+          msg.substring(0, this.config.triggers.bawdySong.length) ===
+          this.config.triggers.bawdySong
+        ) {
           const song = this.getSong();
-          this.log(`Reply "${song}" to "${message.content}" from ${message.author.tag}`);
+          this.log(
+            `Reply "${song}" to "${message.content}" from ${message.author.tag}`
+          );
           message.reply(song);
-        }
-        else if (msg.substring(0, this.config.triggers.makeMeSweat.length) === this.config.triggers.makeMeSweat) {
+        } else if (
+          msg.substring(0, this.config.triggers.makeMeSweat.length) ===
+          this.config.triggers.makeMeSweat
+        ) {
           const fit = this.getFit();
-          const maso = message.content.substring(this.config.triggers.makeMeSweat.length).trim();
-          this.log(`Reply "${fit}" to "${message.content}" from ${message.author.tag}`);
+          const maso = message.content
+            .substring(this.config.triggers.makeMeSweat.length)
+            .trim();
+          this.log(
+            `Reply "${fit}" to "${message.content}" from ${message.author.tag}`
+          );
           message.channel.send(maso + ", " + fit);
         }
       });
@@ -85,30 +107,40 @@ export class Saroumane extends Bot {
   }
 
   private getAnswerTellMe() {
-    const answers = this.config.answers.tellMe[roll(this.config.answers.tellMe.length) - 1];
+    const answers = this.config.answers.tellMe[
+      roll(this.config.answers.tellMe.length) - 1
+    ];
     return answers[roll(answers.length) - 1];
   }
 
   private getTypeAnswerWho() {
-    const answers = this.config.answers.who[roll(this.config.answers.who.length) - 1];
+    const answers = this.config.answers.who[
+      roll(this.config.answers.who.length) - 1
+    ];
     return answers[roll(answers.length) - 1];
   }
 
   private getAnswerWhichPlayer() {
     const answer = this.getTypeAnswerWho();
-    const player = this.config.answers.players[roll(this.config.answers.players.length) - 1];
-    return answer.replace('*', player);
+    const player = this.config.answers.players[
+      roll(this.config.answers.players.length) - 1
+    ];
+    return answer.replace("*", player);
   }
 
   private getAnswerWhichCharacter() {
     const answer = this.getTypeAnswerWho();
-    const character = this.config.answers.characters[roll(this.config.answers.characters.length) - 1];
-    return answer.replace('*', character);
+    const character = this.config.answers.characters[
+      roll(this.config.answers.characters.length) - 1
+    ];
+    return answer.replace("*", character);
   }
 
   private getAnswerWho() {
     const answer = this.getTypeAnswerWho();
-    const names = this.config.answers.players.concat(this.config.answers.characters);
+    const names = this.config.answers.players.concat(
+      this.config.answers.characters
+    );
     return names[roll(names.length) - 1];
   }
 
@@ -118,15 +150,25 @@ export class Saroumane extends Bot {
     const rollMalus = roll(100);
 
     if (rollMalus > 89) {
-      return "bravo ! Demande à n'importe qui de faire " + exercise + " pour " + points.toString() + " point(s)";
-    }
-
-    else if (rollMalus < 11) {
-      return "grâce à toi, tout le monde doit faire " + exercise + " pour " + points.toString() + " point(s)";
-    }
-
-    else {
-      return "fais-nous " + exercise + " pour " + points.toString() + " point(s)";
+      return (
+        "bravo ! Demande à n'importe qui de faire " +
+        exercise +
+        " pour " +
+        points.toString() +
+        " point(s)"
+      );
+    } else if (rollMalus < 11) {
+      return (
+        "grâce à toi, tout le monde doit faire " +
+        exercise +
+        " pour " +
+        points.toString() +
+        " point(s)"
+      );
+    } else {
+      return (
+        "fais-nous " + exercise + " pour " + points.toString() + " point(s)"
+      );
     }
   }
 }
