@@ -29,12 +29,11 @@ export function notEmpty<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined;
 }
 
-// export function formatString(format: string, ...args: string[]) {
 export function formatString(format: string, args: any) {
-  return format.replace(/{{|}}|{(\w+)}/g, function (match, name) {
+  return format.replace(/{{|}}|{(\w+)}/g, function (match, name): any {
     if (name) {
       const value = args[name];
-      return value || match;
+      return `${value}` || "";
     } else {
       switch (match) {
         case "{{":

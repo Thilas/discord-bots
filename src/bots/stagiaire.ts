@@ -267,7 +267,8 @@ export class Stagiaire extends Bot {
             formatString(this.config.messages.results.logs[item.kind], {
               roll: roll,
               bonus: bonus,
-              ingredients: item.plants.map((plant) => plant.name).join(", "),
+              ingredients:
+                item.plants.map((plant) => plant.name).join(", ") || "aucun",
             })
           );
           break;
