@@ -1,3 +1,6 @@
+export const locale = "fr-FR";
+export const timeZone = "Europe/Paris";
+
 /**
  * Rolls a dice between 1 and `max`.
  * @param max Max value of the dice to roll.
@@ -43,4 +46,12 @@ export function formatString(format: string, args: any) {
       }
     }
   });
+}
+
+export function localeEquals(left: string, right: string) {
+  return (
+    left.localeCompare(right, locale, {
+      sensitivity: "base",
+    }) === 0
+  );
 }

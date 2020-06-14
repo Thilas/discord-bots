@@ -1,7 +1,15 @@
 import { Message } from "discord.js";
 import { loadAndWatch } from "../config";
 import stagiaireConfig from "../config/stagiaire.json";
-import { escapeRegExp, formatString, notEmpty, roll } from "../utils";
+import {
+  escapeRegExp,
+  formatString,
+  locale,
+  localeEquals,
+  notEmpty,
+  roll,
+  timeZone,
+} from "../utils";
 import { Bot } from "./bot";
 
 /*
@@ -56,18 +64,18 @@ export class Stagiaire extends Bot {
           // Is help trigger?
           const escapedTriggerHelp = escapeRegExp(this.config.triggers.help);
           const regexHelp = new RegExp(
-            `\\b(?<trigger>${escapedTriggerHelp})(?: (?<command>.+))?\\b`
+            `\\b(?<trigger>${escapedTriggerHelp})\\b(?: (?<command>.+))?`
           );
           const matchHelp = message.content.match(regexHelp);
           if (matchHelp && matchHelp.groups) {
             if (
               channel.isValidTrigger(
                 this.config.triggers.help,
+                matchHelp.groups,
                 this.getOnError(
                   message,
                   channel.getWrongChannelCommandErrorMessage(message)
-                ),
-                matchHelp.groups.command
+                )
               )
             ) {
               channel.writeHelp(message, matchHelp.groups.command);
@@ -78,20 +86,21 @@ export class Stagiaire extends Bot {
           // Is list trigger?
           const escapedTriggerList = escapeRegExp(this.config.triggers.list);
           const regexLists = new RegExp(
-            `\\b(?<trigger>${escapedTriggerList})\\b`
+            `\\b(?<trigger>${escapedTriggerList})\\b(?: (?<difficulty>\\d+))?(?: \\((?<ingredient>.+)\\))?(?: (?<category>.+))?`
           );
           const matchLists = message.content.match(regexLists);
           if (matchLists && matchLists.groups) {
             if (
               channel.isValidTrigger(
                 this.config.triggers.list,
+                matchLists.groups,
                 this.getOnError(
                   message,
                   channel.getWrongChannelCommandErrorMessage(message)
                 )
               )
             ) {
-              channel.writeList(message);
+              channel.writeList(message, matchLists.groups);
             }
             return;
           }
@@ -105,13 +114,14 @@ export class Stagiaire extends Bot {
             .map((id) => escapeRegExp(id))
             .join("|");
           const regexRoll = new RegExp(
-            `\\b(?<trigger>${escapedTriggersRolls}) (?<item>.+) \\((?<perso>.+?) (?:(?<bonus>-?\\d+)|(?<semester>-?\\d+) (?<gift>\\d+))\\)`
+            `\\b(?<trigger>${escapedTriggersRolls})\\b (?<item>.+) \\((?<perso>.+?) (?:(?<bonus>-?\\d+)|(?<semester>-?\\d+) (?<gift>\\d+))\\)`
           );
           const matchRoll = message.content.match(regexRoll);
           if (matchRoll && matchRoll.groups) {
             if (
               !channel.isValidTrigger(
                 matchRoll.groups.trigger,
+                matchRoll.groups,
                 this.getOnError(
                   message,
                   channel.getWrongChannelCommandErrorMessage(message)
@@ -184,14 +194,13 @@ export class Stagiaire extends Bot {
   }
 
   private getTime(item: Item): string {
-    const locale = "fr-FR";
     const options = {
       weekday: "long",
       day: "numeric",
       month: "long",
       hour: "2-digit",
       minute: "2-digit",
-      timeZone: "Europe/Paris",
+      timeZone: timeZone,
     };
     switch (item.kind) {
       case "plant":
@@ -336,12 +345,10 @@ export class Stagiaire extends Bot {
 
   public getPlant(input: string, onError?: () => void) {
     let plant = this.config.plants.find((plant) =>
-      plant.key.some((id) => id.toUpperCase() === input.toUpperCase())
+      plant.key.some((id) => localeEquals(id, input))
     );
     if (!plant) {
-      plant = this.config.plants.find(
-        (id) => id.name.toUpperCase() === input.toUpperCase()
-      );
+      plant = this.config.plants.find((id) => localeEquals(id.name, input));
       if (!plant) {
         if (onError) onError();
         return;
@@ -359,12 +366,10 @@ export class Stagiaire extends Bot {
 
   public getPotion(input: string, onError: () => void) {
     let potion = this.config.potions.find((potion) =>
-      potion.key.some((id) => id.toUpperCase() === input.toUpperCase())
+      potion.key.some((id) => localeEquals(id, input))
     );
     if (!potion) {
-      potion = this.config.potions.find(
-        (id) => id.name.toUpperCase() === input.toUpperCase()
-      );
+      potion = this.config.potions.find((id) => localeEquals(id.name, input));
       if (!potion) {
         onError();
         return;
@@ -382,6 +387,10 @@ export class Stagiaire extends Bot {
   }
 }
 
+interface Groups {
+  [key: string]: string;
+}
+
 abstract class Channel {
   protected constructor(
     protected readonly stagiaire: Stagiaire,
@@ -390,21 +399,24 @@ abstract class Channel {
 
   protected isValidTriggerInternal(
     trigger: string,
+    groups: Groups,
     onError: () => void,
-    command?: string
+    predicate?: () => boolean
   ) {
-    switch (trigger) {
-      case this.stagiaire.config.triggers.help:
-        switch (command) {
-          case undefined:
-          case this.stagiaire.config.triggers.list:
-          case this.rollTrigger:
-            return true;
-        }
-        break;
-      case this.stagiaire.config.triggers.list:
-      case this.rollTrigger:
-        return true;
+    if (!predicate || predicate()) {
+      switch (trigger) {
+        case this.stagiaire.config.triggers.help:
+          switch (groups.command) {
+            case undefined:
+            case this.stagiaire.config.triggers.list:
+            case this.rollTrigger:
+              return true;
+          }
+          break;
+        case this.stagiaire.config.triggers.list:
+        case this.rollTrigger:
+          return true;
+      }
     }
     onError();
     return false;
@@ -412,11 +424,11 @@ abstract class Channel {
 
   abstract isValidTrigger(
     trigger: string,
-    onError: () => void,
-    command?: string
+    groups: Groups,
+    onError: () => void
   ): boolean;
   abstract writeHelp(message: Message, command: string): void;
-  abstract writeList(message: Message): void;
+  abstract writeList(message: Message, groups: Groups): void;
   abstract getItem(input: string, onError: () => void): Item | undefined;
   abstract getItemErrorMessage(): string;
   abstract getWrongChannelCommandErrorMessage(message: Message): string;
@@ -427,8 +439,15 @@ class PlantChannel extends Channel {
     super(stagiaire, stagiaire.config.triggers.plant.roll);
   }
 
-  isValidTrigger(trigger: string, onError: () => void, command?: string) {
-    return this.isValidTriggerInternal(trigger, onError, command);
+  isValidTrigger(trigger: string, groups: Groups, onError: () => void) {
+    return this.isValidTriggerInternal(trigger, groups, onError, () => {
+      switch (trigger) {
+        case this.stagiaire.config.triggers.list:
+          if (groups.ingredient) return false;
+          break;
+      }
+      return true;
+    });
   }
 
   writeHelp(message: Message, command: string) {
@@ -465,16 +484,35 @@ class PlantChannel extends Channel {
     }
   }
 
-  writeList(message: Message) {
-    this.stagiaire.config.plants.forEach((plant) => {
+  writeList(message: Message, groups: Groups) {
+    const difficulty = groups.difficulty
+      ? new Number(groups.difficulty).valueOf()
+      : undefined;
+    const plants = this.stagiaire.config.plants.filter((plant) => {
+      if (difficulty && plant.level !== difficulty) return false;
+      if (
+        groups.category &&
+        !plant.categories.some((category) =>
+          localeEquals(category, groups.category)
+        )
+      )
+        return false;
+      return true;
+    });
+    if (!plants.length) {
+      // No plant found
+      message.reply("No plant");
+      return;
+    }
+    plants.forEach((plant) => {
       message.channel.send(
         `**${plant.name}** | Niveau : ${plant.level} | Durée : ${
           plant.duration
         } jours
           Catégories :
-              ${plant.key.join("\n              ") || "aucune"}
+              ${plant.categories.join("\n              ") || "aucune"}
           Autres syntaxes acceptées :
-              ${plant.key.join("\n              " || "aucune")}
+              ${plant.key.join("\n              ") || "aucune"}
           Usages :
               ${plant.usages.join("\n              ")}`
       );
@@ -507,8 +545,8 @@ class PotionChannel extends Channel {
     super(stagiaire, stagiaire.config.triggers.potion.roll);
   }
 
-  isValidTrigger(trigger: string, onError: () => void, command?: string) {
-    return this.isValidTriggerInternal(trigger, onError, command);
+  isValidTrigger(trigger: string, groups: Groups, onError: () => void) {
+    return this.isValidTriggerInternal(trigger, groups, onError);
   }
 
   writeHelp(message: Message, command: string) {
@@ -545,15 +583,48 @@ class PotionChannel extends Channel {
     }
   }
 
-  writeList(message: Message) {
-    this.stagiaire.config.potions.forEach((potion) => {
+  writeList(message: Message, groups: Groups) {
+    const difficulty = groups.difficulty
+      ? new Number(groups.difficulty).valueOf()
+      : undefined;
+    const plant = groups.ingredient
+      ? this.stagiaire.getPlant(groups.ingredient)
+      : undefined;
+    const ingredient = plant ? plant.name : groups.ingredient;
+    const potions = this.stagiaire.config.potions.filter((potion) => {
+      if (difficulty && potion.level !== difficulty) return false;
+      if (ingredient) {
+        if (localeEquals("aucun", ingredient)) {
+          if (potion.plants.length) return false;
+        } else if (
+          !potion.plants.some((plant) => localeEquals(plant, ingredient))
+        ) {
+          return false;
+        }
+      }
+      if (
+        groups.category &&
+        !potion.categories.some((category) =>
+          localeEquals(category, groups.category)
+        )
+      )
+        return false;
+
+      return true;
+    });
+    if (!potions.length) {
+      // No potion found
+      message.reply("No potion");
+      return;
+    }
+    potions.forEach((potion) => {
       message.channel.send(
         `**${potion.name}** | Niveau : ${potion.level} | Durée : ${
           potion.duration
         } heures
           *${potion.description}*
           Catégories :
-              ${potion.key.join("\n              ") || "aucune"}
+              ${potion.categories.join("\n              ") || "aucune"}
           Autres syntaxes acceptées :
               ${potion.key.join("\n              ") || "aucune"}
           Ingrédients :
