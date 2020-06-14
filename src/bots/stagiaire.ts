@@ -1,17 +1,30 @@
+import { Message } from "discord.js";
 import { loadAndWatch } from "../config";
 import stagiaireConfig from "../config/stagiaire.json";
 import { escapeRegExp, formatString, notEmpty, roll } from "../utils";
 import { Bot } from "./bot";
 
-export class Stagiaire extends Bot {
-  private config = loadAndWatch("stagiaire.json", stagiaireConfig, (config) => {
-    this.log(`Triggers: rollPlant='${config.triggers.rollPlant}',
-      rollPotion='${config.triggers.rollPotion}'`);
+/*
+Salon des potions :
+  aide-moi [liste|prépare]
+  liste
+  prépare
+  * Syntaxe réservée au salon des plantes => wrongChannelCommand
 
-    // const plants = config.plants;
-    // const potions = config.potions;
-    // const errorMessages = config.messages.errors;
-    // const confirmationMessages = config.messages.confirmation;
+Salon des plantes :
+  aide-moi [liste|cultive]
+  liste
+  cultive
+  * Syntaxe réservée au salon des potions => wrongChannelCommand
+
+Autre salon :
+  Erreur : wrongChannel
+*/
+
+export class Stagiaire extends Bot {
+  public config = loadAndWatch("stagiaire.json", stagiaireConfig, (config) => {
+    this.log(`Triggers: rollPlant='${config.triggers.plant.roll}',
+      rollPotion='${config.triggers.potion.roll}'`);
 
     this.config = config;
   });
@@ -19,161 +32,202 @@ export class Stagiaire extends Bot {
   constructor(token: string) {
     super(token, (client) => {
       client.on("message", (message) => {
+        // Is stagiaire bot mentioned?
         if (
           this.config.tagBot
             .map((data) => message.isMentioned(data))
-            .some((mentioned) => mentioned)
+            .some((mentioned) => mentioned) &&
+          message.author.id !== this.config.tagBotId
         ) {
-          const triggers = [
-            this.config.triggers.rollPlant,
-            this.config.triggers.rollPotion,
-          ];
+          const channel = this.getChannel(
+            message.channel.id,
+            this.getOnError(
+              message,
+              formatString(this.config.messages.errors.wrongChannel, {
+                bot: this.getBotMention(),
+                plantChannel: this.getPlantChannelMention(message),
+                potionChannel: this.getPotionChannelMention(message),
+              })
+            )
+          );
+          // Is channel allowed?
+          if (!channel) return;
 
-          const escapedTriggers = triggers
+          // Is help trigger?
+          const escapedTriggerHelp = escapeRegExp(this.config.triggers.help);
+          const regexHelp = new RegExp(
+            `\\b(?<trigger>${escapedTriggerHelp})(?: (?<command>.+))?\\b`
+          );
+          const matchHelp = message.content.match(regexHelp);
+          if (matchHelp && matchHelp.groups) {
+            if (
+              channel.isValidTrigger(
+                this.config.triggers.help,
+                this.getOnError(
+                  message,
+                  channel.getWrongChannelCommandErrorMessage(message)
+                ),
+                matchHelp.groups.command
+              )
+            ) {
+              channel.writeHelp(message, matchHelp.groups.command);
+            }
+            return;
+          }
+
+          // Is list trigger?
+          const escapedTriggerList = escapeRegExp(this.config.triggers.list);
+          const regexLists = new RegExp(
+            `\\b(?<trigger>${escapedTriggerList})\\b`
+          );
+          const matchLists = message.content.match(regexLists);
+          if (matchLists && matchLists.groups) {
+            if (
+              channel.isValidTrigger(
+                this.config.triggers.list,
+                this.getOnError(
+                  message,
+                  channel.getWrongChannelCommandErrorMessage(message)
+                )
+              )
+            ) {
+              channel.writeList(message);
+            }
+            return;
+          }
+
+          // Is any roll trigger?
+          const triggersRolls = [
+            this.config.triggers.plant.roll,
+            this.config.triggers.potion.roll,
+          ];
+          const escapedTriggersRolls = triggersRolls
             .map((id) => escapeRegExp(id))
             .join("|");
-
-          const regex = new RegExp(
-            "\\b(?<trigger>" +
-              escapedTriggers +
-              ") (?<item>.+) \\((?<perso>.+?) (?:(?<bonus>-?\\d+)|(?<semester>-?\\d+) (?<gift>\\d+))\\)"
+          const regexRoll = new RegExp(
+            `\\b(?<trigger>${escapedTriggersRolls}) (?<item>.+) \\((?<perso>.+?) (?:(?<bonus>-?\\d+)|(?<semester>-?\\d+) (?<gift>\\d+))\\)`
           );
-          const matches = message.content.match(regex);
-
-          if (!matches || !matches.groups) {
-            const wrongSyntax = this.config.messages.errors.wrongSyntax;
-            this.log(
-              `Reply "${wrongSyntax}" to "${message.content}" from ${message.author.tag}`
-            );
-            message.reply(wrongSyntax);
-            return;
-          }
-
-          const item = this.getItem(
-            matches.groups.trigger,
-            matches.groups.item,
-            () => {
-              const wrongPlant = this.config.messages.errors.wrongPlant;
-              this.log(
-                `Reply "${wrongPlant}" to "${message.content}" from ${message.author.tag}`
-              );
-              message.reply(wrongPlant);
-            },
-            () => {
-              const wrongPotion = this.config.messages.errors.wrongPotion;
-              this.log(
-                `Reply "${wrongPotion}" to "${message.content}" from ${message.author.tag}`
-              );
-              message.reply(wrongPotion);
+          const matchRoll = message.content.match(regexRoll);
+          if (matchRoll && matchRoll.groups) {
+            if (
+              !channel.isValidTrigger(
+                matchRoll.groups.trigger,
+                this.getOnError(
+                  message,
+                  channel.getWrongChannelCommandErrorMessage(message)
+                )
+              )
+            ) {
+              return;
             }
-          );
-          if (!item) {
-            return;
-          }
-
-          const data = new InputData(
-            matches.groups.perso,
-            parseInt(matches.groups.bonus, 10),
-            parseInt(matches.groups.semester, 10),
-            parseInt(matches.groups.gift, 10),
-            () => {
-              const wrongGift = this.config.messages.errors.wrongGift;
-              this.log(
-                `Reply "${wrongGift}" to "${message.content}" from ${message.author.tag}`
-              );
-              message.reply(wrongGift);
-            },
-            () => {
-              const wrongSemester = this.config.messages.errors.wrongSemester;
-              this.log(
-                `Reply "${wrongSemester}" to "${message.content}" from ${message.author.tag}`
-              );
-              message.reply(wrongSemester);
-            }
-          );
-          if (!data.validated) {
-            return;
-          }
-
-          const bonus = data.inputBonus
-            ? data.bonus
-            : this.getBonus(item, data);
-          if (bonus === undefined) {
-            const bonusNotFound = this.config.messages.errors.bonusNotFound;
-            this.log(
-              `Reply "${bonusNotFound}" to "${message.content}" from ${message.author.tag}`
+            const item = channel.getItem(
+              matchRoll.groups.item,
+              this.getOnError(message, channel.getItemErrorMessage())
             );
-            message.reply(bonusNotFound);
-          }
+            if (!item) return;
 
-          this.getResult(roll(100), bonus || 0, item, data, (content) => {
+            const data = new InputData(
+              matchRoll.groups.perso,
+              parseInt(matchRoll.groups.bonus, 10),
+              parseInt(matchRoll.groups.semester, 10),
+              parseInt(matchRoll.groups.gift, 10),
+              this.getOnError(
+                message,
+                formatString(this.config.messages.errors.wrongGift, {
+                  bot: this.getBotMention(),
+                })
+              ),
+              this.getOnError(
+                message,
+                formatString(this.config.messages.errors.wrongSemester, {
+                  bot: this.getBotMention(),
+                })
+              )
+            );
+            if (!data.validated) return;
+
+            const bonus = data.inputBonus
+              ? data.bonus
+              : this.getBonus(item, data);
+            if (!bonus) {
+              this.getOnError(
+                message,
+                this.config.messages.errors.bonusNotFound
+              )();
+            }
+
+            const content = this.getResult(roll(100), bonus || 0, item, data);
             this.log(content);
             message.reply(content);
-          });
+            return;
+          }
+          this.getOnError(
+            message,
+            formatString(this.config.messages.errors.wrongSyntax, {
+              bot: this.getBotMention(),
+            })
+          )();
+          return;
         }
       });
     });
   }
 
-  private getItem(
-    trigger: string,
-    item: string,
-    onPlantError: () => void,
-    onPotionError: () => void
-  ) {
-    switch (trigger) {
-      case this.config.triggers.rollPlant:
-        return this.getPlant(item, onPlantError);
-      case this.config.triggers.rollPotion:
-        return this.getPotion(item, onPotionError);
+  private getChannel(channel: string, onError: () => void) {
+    switch (channel) {
+      case this.config.triggers.plant.chanPlayers:
+        return new PlantChannel(this);
+      case this.config.triggers.potion.chanPlayers:
+        return new PotionChannel(this);
+    }
+    onError();
+  }
+
+  private getTime(item: Item): string {
+    const locale = "fr-FR";
+    const options = {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Europe/Paris",
+    };
+    switch (item.kind) {
+      case "plant":
+        return new Date(
+          Date.now() + item.duration * 24 * 60 * 60 * 1000
+        ).toLocaleString(locale, options);
+      case "potion":
+        return new Date(
+          Date.now() + item.duration * 60 * 60 * 1000
+        ).toLocaleString(locale, options);
     }
   }
 
-  private getPlant(inputPlant: string, onError: () => void = function () {}) {
-    let plant = this.config.plants.find(
-      (id) => id.key.toUpperCase() === inputPlant.toUpperCase()
-    );
-    if (!plant) {
-      plant = this.config.plants.find(
-        (id) => id.name.toUpperCase() === inputPlant.toUpperCase()
-      );
-      if (!plant) {
-        onError();
-        return;
-      }
-    }
-    const result: Plant = {
-      kind: "plant",
-      key: inputPlant,
-      name: plant.name,
-      level: plant.level,
-      duration: plant.duration,
-    };
-    return result;
+  public getBotMention() {
+    return `<@${this.config.tagBotId}>`;
   }
 
-  private getPotion(inputPotion: string, onError: () => void = function () {}) {
-    let potion = this.config.potions.find(
-      (id) => id.key.toUpperCase() === inputPotion.toUpperCase()
-    );
-    if (!potion) {
-      potion = this.config.potions.find(
-        (id) => id.name.toUpperCase() === inputPotion.toUpperCase()
+  private getOnError(message: Message, errorMessage: string) {
+    return () => {
+      this.log(
+        `Reply "${errorMessage}" to "${message.content}" from ${message.author.tag}`
       );
-      if (!potion) {
-        onError();
-        return;
-      }
-    }
-    const result: Potion = {
-      kind: "potion",
-      key: inputPotion,
-      name: potion.name,
-      level: potion.level,
-      duration: potion.duration,
-      plants: potion.plants.map((id) => this.getPlant(id)).filter(notEmpty),
+      message.reply(errorMessage);
     };
-    return result;
+  }
+
+  public getPlantChannelMention(message: Message) {
+    return message.client.channels.find(
+      (chan) => chan.id === this.config.triggers.plant.chanPlayers
+    );
+  }
+
+  public getPotionChannelMention(message: Message) {
+    return message.client.channels.find(
+      (chan) => chan.id === this.config.triggers.potion.chanPlayers
+    );
   }
 
   private getBonus(item: Item, data: InputData) {
@@ -187,16 +241,11 @@ export class Stagiaire extends Bot {
     return itemBonus.bonus + giftBonus;
   }
 
-  private getResult(
-    roll: number,
-    bonus: number,
-    item: Item,
-    data: InputData,
-    onMessage: (content: string) => void
-  ) {
+  private getResult(roll: number, bonus: number, item: Item, data: InputData) {
     let total = roll + bonus;
     let quantity = 0;
 
+    let content = new Array<string>();
     try {
       switch (roll) {
         case 100:
@@ -204,7 +253,7 @@ export class Stagiaire extends Bot {
           quantity += 1;
           break;
         case 1:
-          onMessage(
+          content.push(
             formatString(
               this.config.messages.results.failure1[item.kind].result,
               {
@@ -214,12 +263,12 @@ export class Stagiaire extends Bot {
               }
             )
           );
-          onMessage(
+          content.push(
             this.config.messages.results.failure1[item.kind].consequence
           );
           return;
         case 2:
-          onMessage(
+          content.push(
             formatString(
               this.config.messages.results.failure2[item.kind].result,
               {
@@ -229,7 +278,7 @@ export class Stagiaire extends Bot {
               }
             )
           );
-          onMessage(
+          content.push(
             this.config.messages.results.failure2[item.kind].consequence
           );
           return;
@@ -242,7 +291,7 @@ export class Stagiaire extends Bot {
       } else if (total >= 50) {
         quantity += 2;
       } else {
-        onMessage(
+        content.push(
           formatString(this.config.messages.results.missed[item.kind], {
             time: this.getTime(item),
             perso: data.perso,
@@ -252,7 +301,7 @@ export class Stagiaire extends Bot {
         return;
       }
 
-      onMessage(
+      content.push(
         formatString(this.config.messages.results.success[item.kind], {
           time: this.getTime(item),
           perso: data.perso,
@@ -263,7 +312,7 @@ export class Stagiaire extends Bot {
     } finally {
       switch (item.kind) {
         case "potion":
-          onMessage(
+          content.push(
             formatString(this.config.messages.results.logs[item.kind], {
               roll: roll,
               bonus: bonus,
@@ -273,7 +322,7 @@ export class Stagiaire extends Bot {
           );
           break;
         default:
-          onMessage(
+          content.push(
             formatString(this.config.messages.results.logs[item.kind], {
               roll: roll,
               bonus: bonus,
@@ -281,28 +330,256 @@ export class Stagiaire extends Bot {
           );
           break;
       }
+      return content.join("\n");
     }
   }
 
-  private getTime(item: Item): string {
-    const locale = "fr-FR";
-    const options = {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      hour: "2-digit",
-      minute: "2-digit",
-    };
-    switch (item.kind) {
-      case "plant":
-        return new Date(
-          Date.now() + item.duration * 24 * 60 * 60 * 1000
-        ).toLocaleString(locale, options);
-      case "potion":
-        return new Date(
-          Date.now() + item.duration * 60 * 60 * 1000
-        ).toLocaleString(locale, options);
+  public getPlant(input: string, onError?: () => void) {
+    let plant = this.config.plants.find((plant) =>
+      plant.key.some((id) => id.toUpperCase() === input.toUpperCase())
+    );
+    if (!plant) {
+      plant = this.config.plants.find(
+        (id) => id.name.toUpperCase() === input.toUpperCase()
+      );
+      if (!plant) {
+        if (onError) onError();
+        return;
+      }
     }
+    const result: Plant = {
+      kind: "plant",
+      key: input,
+      name: plant.name,
+      level: plant.level,
+      duration: plant.duration,
+    };
+    return result;
+  }
+
+  public getPotion(input: string, onError: () => void) {
+    let potion = this.config.potions.find((potion) =>
+      potion.key.some((id) => id.toUpperCase() === input.toUpperCase())
+    );
+    if (!potion) {
+      potion = this.config.potions.find(
+        (id) => id.name.toUpperCase() === input.toUpperCase()
+      );
+      if (!potion) {
+        onError();
+        return;
+      }
+    }
+    const result: Potion = {
+      kind: "potion",
+      key: input,
+      name: potion.name,
+      level: potion.level,
+      duration: potion.duration,
+      plants: potion.plants.map((id) => this.getPlant(id)).filter(notEmpty),
+    };
+    return result;
+  }
+}
+
+abstract class Channel {
+  protected constructor(
+    protected readonly stagiaire: Stagiaire,
+    private readonly rollTrigger: string
+  ) {}
+
+  protected isValidTriggerInternal(
+    trigger: string,
+    onError: () => void,
+    command?: string
+  ) {
+    switch (trigger) {
+      case this.stagiaire.config.triggers.help:
+        switch (command) {
+          case undefined:
+          case this.stagiaire.config.triggers.list:
+          case this.rollTrigger:
+            return true;
+        }
+        break;
+      case this.stagiaire.config.triggers.list:
+      case this.rollTrigger:
+        return true;
+    }
+    onError();
+    return false;
+  }
+
+  abstract isValidTrigger(
+    trigger: string,
+    onError: () => void,
+    command?: string
+  ): boolean;
+  abstract writeHelp(message: Message, command: string): void;
+  abstract writeList(message: Message): void;
+  abstract getItem(input: string, onError: () => void): Item | undefined;
+  abstract getItemErrorMessage(): string;
+  abstract getWrongChannelCommandErrorMessage(message: Message): string;
+}
+
+class PlantChannel extends Channel {
+  constructor(stagiaire: Stagiaire) {
+    super(stagiaire, stagiaire.config.triggers.plant.roll);
+  }
+
+  isValidTrigger(trigger: string, onError: () => void, command?: string) {
+    return this.isValidTriggerInternal(trigger, onError, command);
+  }
+
+  writeHelp(message: Message, command: string) {
+    switch (command) {
+      case undefined:
+        message.reply(
+          formatString(this.stagiaire.config.messages.help.plants.general, {
+            bot: this.stagiaire.getBotMention(),
+            plantChan: this.stagiaire.getPlantChannelMention(message),
+            potionChan: this.stagiaire.getPotionChannelMention(message),
+          })
+        );
+        return;
+      case this.stagiaire.config.triggers.list:
+        message.reply(
+          formatString(
+            this.stagiaire.config.messages.help.plants.commands.list,
+            {
+              bot: this.stagiaire.getBotMention(),
+            }
+          )
+        );
+        return;
+      case this.stagiaire.config.triggers.plant.roll:
+        message.reply(
+          formatString(
+            this.stagiaire.config.messages.help.plants.commands.roll,
+            {
+              bot: this.stagiaire.getBotMention(),
+            }
+          )
+        );
+        return;
+    }
+  }
+
+  writeList(message: Message) {
+    this.stagiaire.config.plants.forEach((plant) => {
+      message.channel.send(
+        `**${plant.name}** | Niveau : ${plant.level} | Durée : ${
+          plant.duration
+        } jours
+          Catégories :
+              ${plant.key.join("\n              ") || "aucune"}
+          Autres syntaxes acceptées :
+              ${plant.key.join("\n              " || "aucune")}
+          Usages :
+              ${plant.usages.join("\n              ")}`
+      );
+    });
+  }
+
+  getItem(input: string, onError: () => void) {
+    return this.stagiaire.getPlant(input, onError);
+  }
+
+  getItemErrorMessage() {
+    return formatString(this.stagiaire.config.messages.errors.wrongPlant, {
+      bot: this.stagiaire.getBotMention(),
+    });
+  }
+
+  getWrongChannelCommandErrorMessage(message: Message) {
+    return formatString(
+      this.stagiaire.config.messages.errors.wrongChannelCommand.plant,
+      {
+        bot: this.stagiaire.getBotMention(),
+        potionChan: this.stagiaire.getPotionChannelMention(message),
+      }
+    );
+  }
+}
+
+class PotionChannel extends Channel {
+  constructor(stagiaire: Stagiaire) {
+    super(stagiaire, stagiaire.config.triggers.potion.roll);
+  }
+
+  isValidTrigger(trigger: string, onError: () => void, command?: string) {
+    return this.isValidTriggerInternal(trigger, onError, command);
+  }
+
+  writeHelp(message: Message, command: string) {
+    switch (command) {
+      case undefined:
+        message.reply(
+          formatString(this.stagiaire.config.messages.help.potions.general, {
+            bot: this.stagiaire.getBotMention(),
+            plantChan: this.stagiaire.getPlantChannelMention(message),
+            potionChan: this.stagiaire.getPotionChannelMention(message),
+          })
+        );
+        return;
+      case this.stagiaire.config.triggers.list:
+        message.reply(
+          formatString(
+            this.stagiaire.config.messages.help.potions.commands.list,
+            {
+              bot: this.stagiaire.getBotMention(),
+            }
+          )
+        );
+        return;
+      case this.stagiaire.config.triggers.potion.roll:
+        message.reply(
+          formatString(
+            this.stagiaire.config.messages.help.potions.commands.roll,
+            {
+              bot: this.stagiaire.getBotMention(),
+            }
+          )
+        );
+        return;
+    }
+  }
+
+  writeList(message: Message) {
+    this.stagiaire.config.potions.forEach((potion) => {
+      message.channel.send(
+        `**${potion.name}** | Niveau : ${potion.level} | Durée : ${
+          potion.duration
+        } heures
+          *${potion.description}*
+          Catégories :
+              ${potion.key.join("\n              ") || "aucune"}
+          Autres syntaxes acceptées :
+              ${potion.key.join("\n              ") || "aucune"}
+          Ingrédients :
+              ${potion.plants.join("\n              ") || "aucun"}`
+      );
+    });
+  }
+
+  getItem(input: string, onError: () => void) {
+    return this.stagiaire.getPotion(input, onError);
+  }
+
+  getItemErrorMessage() {
+    return formatString(this.stagiaire.config.messages.errors.wrongPotion, {
+      bot: this.stagiaire.getBotMention(),
+    });
+  }
+
+  getWrongChannelCommandErrorMessage(message: Message) {
+    return formatString(
+      this.stagiaire.config.messages.errors.wrongChannelCommand.potion,
+      {
+        bot: this.stagiaire.getBotMention(),
+        plantChan: this.stagiaire.getPlantChannelMention(message),
+      }
+    );
   }
 }
 

@@ -1,0 +1,45 @@
+{
+  "allGames": [
+    {
+      "game": {
+        "id": 1,
+        "date": "2020-04-25",
+        "players": {
+          "Elly#0624": {
+            "jokers": {
+              "capital": 2,
+              "remaining": 1
+            },
+            "rolls": [
+              {
+                "roll": 45,
+                "fit": "blabla",
+                "points": 2,
+                "bitches": [
+                  "Elly#0624"
+                ],
+                "escaped": [
+                  "Elly#0624"
+                ]
+              },
+              {
+                "roll": 17,
+                "fit": "blablatruc",
+                "points": 5
+              }
+            ],
+            "parameters": {
+              "total": 40
+            }
+          }
+        },
+        "parameters": {
+          "EC": 10,
+          "RC": 90,
+          "maxPoints": 5,
+          "total": 30
+        }
+      }
+    }
+  ]
+}

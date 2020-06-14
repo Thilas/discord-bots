@@ -1,20 +1,35 @@
 {
-  "tagBot": [
-    "user",
-    "role"
-  ],
+  "tagBotId": "",
+  "tagBot": ["user", "role"],
   "triggers": {
-    "rollPlant": "rollPlant",
-    "rollPotion": "rollPotion"
+    "plant": {
+      "roll": "cultive",
+      "chanPlayers": "",
+      "chanMJ": "",
+      "MJ": ["", ""]
+    },
+    "potion": {
+      "roll": "prépare",
+      "chanPlayers": "",
+      "chanMJ": "",
+      "MJ": ["", ""]
+    },
+    "help": "aide-moi",
+    "list": "liste"
   },
   "messages": {
     "errors": {
+      "wrongChannel": "wrong channel",
+      "wrongChannelCommand": {
+        "plant": "wrong channel command potion",
+        "potion": "wrong channel command plant"
+      },
       "wrongSyntax": "wrong syntax",
       "wrongPlant": "wrong plant",
       "wrongPotion": "wrong potion",
       "wrongSemester": "wrong semester",
       "wrongGift": "wrong gift",
-      "bonusNotFound": "bonus notFfound"
+      "bonusNotFound": "bonus not found"
     },
     "results": {
       "failure1": {
@@ -49,6 +64,22 @@
         "plant": "*(Roll: {roll} | Bonus: {bonus})*",
         "potion": "*(Roll: {roll} | Bonus: {bonus} | Ingredients: {ingredients})*"
       }
+    },
+    "help": {
+      "potions": {
+        "general": "",
+        "commands": {
+          "list": "",
+          "roll": ""
+        }
+      },
+      "plants": {
+        "general": "",
+        "commands": {
+          "list": "",
+          "roll": ""
+        }
+      }
     }
   },
   "bonus": {
@@ -69,28 +100,25 @@
   },
   "plants": [
     {
-      "key": "plant1",
+      "key": ["plant1", "shortcut"],
+      "categories": ["Santé"],
       "description": "plant 1",
       "name": "Plant 1",
       "level": 1,
       "duration": 1,
-      "usages": [
-        "Potion Vermifuges",
-        "*Les feuilles repoussent les insectes*"
-      ]
+      "usages": ["Potion Vermifuges", "*Les feuilles repoussent les insectes*"]
     }
   ],
   "potions": [
     {
-      "key": "potion1",
+      "key": ["potion1"],
+      "categories": ["Santé"],
       "description": "potion 1",
       "name": "Potion 1",
       "level": 2,
       "duration": 2,
       "valyria": false,
-      "plants": [
-        "plant1"
-      ]
+      "plants": ["plant1"]
     }
   ]
 }

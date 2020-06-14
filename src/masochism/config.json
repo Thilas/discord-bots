@@ -1,0 +1,52 @@
+{
+  "triggers": {},
+  "defaultParameters": {
+    "EC": 10,
+    "RC": 90,
+    "maxPoints": 5,
+    "total": 30
+  },
+  "challenge": [
+    {
+      "fit": "Jumping Jacks",
+      "levels": {
+        "easy": "20",
+        "medium": "40",
+        "hard": "60"
+      }
+    },
+    {
+      "fit": "Chaise",
+      "levels": {
+        "easy": "20 secondes",
+        "medium": "40 secondes",
+        "hard": "60 secondes"
+      }
+    },
+    {
+      "fit": "Gainage",
+      "levels": {
+        "easy": "40 secondes",
+        "medium": "60 secondes",
+        "hard": "1 minute et vingt secondes"
+      }
+    },
+    {
+      "fit": "Gainage inversé",
+      "levels": {
+        "easy": "40 secondes",
+        "medium": "60 secondes",
+        "hard": "1 minute et vingt secondes"
+      }
+    },
+    {
+      "fit": "Gainage latéral",
+      "levels": {
+        "easy": "40 secondes (20 secondes de chaque côté)",
+        "medium": "60 secondes (30 secondes de chaque côté)",
+        "hard": "1 minute et vingt secondes (quarante secondes de chaque côté)"
+      }
+    },
+    {}
+  ]
+}
