@@ -1,68 +1,78 @@
 {
-  "tagBotId": "",
-  "tagBot": ["user", "role"],
+  "tagBotId": "user",
+  "tagBotRoles": ["role"],
   "triggers": {
-    "plant": {
+    "help": "aide-moi",
+    "list": "liste",
+    "plants": {
       "roll": "cultive",
       "chanPlayers": "",
       "chanMJ": "",
-      "MJ": ["", ""]
+      "MJ": [""]
     },
-    "potion": {
+    "potions": {
       "roll": "prépare",
       "chanPlayers": "",
       "chanMJ": "",
-      "MJ": ["", ""]
-    },
-    "help": "aide-moi",
-    "list": "liste"
+      "MJ": [""]
+    }
   },
   "messages": {
     "errors": {
       "wrongChannel": "wrong channel",
       "wrongChannelCommand": {
-        "plant": "wrong channel command potion",
-        "potion": "wrong channel command plant"
+        "plants": "wrong plant channel command: bot={bot}, channels={channels}",
+        "potions": "wrong potion channel command: bot={bot}, channels={channels}"
       },
       "wrongSyntax": "wrong syntax",
-      "wrongPlant": "wrong plant",
-      "wrongPotion": "wrong potion",
+      "wrongItem": {
+        "plants": "wrong plant",
+        "potions": "wrong potion"
+      },
       "wrongSemester": "wrong semester",
       "wrongGift": "wrong gift",
       "bonusNotFound": "bonus not found"
     },
+    "list": {
+      "plants": {
+        "notFound": "plants not found"
+      },
+      "potions": {
+        "notFound": "potions not found"
+      }
+    },
     "results": {
       "failure1": {
-        "plant": {
+        "plants": {
           "result": "plant result for failure 1: time={time}, perso={perso}, item={item}",
           "consequence": "plant consequence for failure 1"
         },
-        "potion": {
+        "potions": {
           "result": "potion result for failure 1: time={time}, perso={perso}, item={item}",
           "consequence": "potion consequence for failure 1"
         }
       },
       "failure2": {
-        "plant": {
+        "plants": {
           "result": "plant result for failure 2: time={time}, perso={perso}, item={item}",
           "consequence": "plant consequence for failure 2"
         },
-        "potion": {
+        "potions": {
           "result": "potion result for failure 2: time={time}, perso={perso}, item={item}",
           "consequence": "potion consequence for failure 2"
         }
       },
       "missed": {
-        "plant": "missed plant: time={time}, perso={perso}, item={item}",
-        "potion": "missed potion: time={time}, perso={perso}, item={item}"
+        "plants": "missed plant: time={time}, perso={perso}, item={item}",
+        "potions": "missed potion: time={time}, perso={perso}, item={item}"
       },
       "success": {
-        "plant": "plant success: time={time}, perso={perso}, quantity={quantity}, item={item}",
-        "potion": "potion success: time={time}, perso={perso}, quantity={quantity}, item={item}"
+        "plants": "plant success: time={time}, perso={perso}, quantity={quantity}, item={item}",
+        "potions": "potion success: time={time}, perso={perso}, quantity={quantity}, item={item}"
       },
       "logs": {
-        "plant": "*(Roll: {roll} | Bonus: {bonus})*",
-        "potion": "*(Roll: {roll} | Bonus: {bonus} | Ingredients: {ingredients})*"
+        "plants": "*(Roll: {roll} | Bonus: {bonus})*",
+        "potions": "*(Roll: {roll} | Bonus: {bonus} | Ingredients: {ingredients})*"
       }
     },
     "help": {
@@ -82,43 +92,36 @@
       }
     }
   },
-  "bonus": {
-    "plant": [
-      {
-        "level": 0,
-        "semester": 0,
-        "bonus": 10
-      }
-    ],
-    "potion": [
-      {
-        "level": 0,
-        "semester": 0,
-        "bonus": 10
-      }
-    ]
+  "bonuses": {
+    "plants": [{
+      "level": 0,
+      "semester": 0,
+      "bonus": 10
+    }],
+    "potions": [{
+      "level": 0,
+      "semester": 0,
+      "bonus": 10
+    }]
   },
-  "plants": [
-    {
-      "key": ["plant1", "shortcut"],
-      "categories": ["Santé"],
-      "description": "plant 1",
-      "name": "Plant 1",
-      "level": 1,
-      "duration": 1,
-      "usages": ["Potion Vermifuges", "*Les feuilles repoussent les insectes*"]
-    }
-  ],
-  "potions": [
-    {
-      "key": ["potion1"],
-      "categories": ["Santé"],
-      "description": "potion 1",
-      "name": "Potion 1",
-      "level": 2,
-      "duration": 2,
-      "valyria": false,
-      "plants": ["plant1"]
-    }
-  ]
+  "categories": ["cat1", "cat2"],
+  "plants": [{
+    "key": ["plant1", "shortcut"],
+    "categories": ["cat1"],
+    "description": "plant 1",
+    "name": "Plant 1",
+    "level": 1,
+    "duration": 1,
+    "usages": ["Potion Vermifuges", "*Les feuilles repoussent les insectes*"]
+  }],
+  "potions": [{
+    "key": ["potion1"],
+    "categories": ["cat2"],
+    "description": "potion 1",
+    "name": "Potion 1",
+    "level": 2,
+    "duration": 2,
+    "valyria": false,
+    "plants": ["plant1"]
+  }]
 }

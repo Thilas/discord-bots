@@ -1,6 +1,10 @@
 export const locale = "fr-FR";
 export const timeZone = "Europe/Paris";
 
+export interface Groups {
+  [key: string]: string;
+}
+
 /**
  * Rolls a dice between 1 and `max`.
  * @param max Max value of the dice to roll.
@@ -14,7 +18,7 @@ export function roll(max: number): number;
  * @returns An array of pseudorandom numbers.
  */
 export function roll(max: number, dices: number): number[];
-export function roll(max: number, dices: any = undefined) {
+export function roll(max: number, dices?: number) {
   if (dices == undefined) {
     const result = Math.floor(Math.random() * max) + 1;
     return result;
