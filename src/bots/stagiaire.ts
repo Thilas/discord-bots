@@ -39,7 +39,6 @@ export class Stagiaire extends Bot {
             this.writeError(
               message,
               formatString(this.config.messages.errors.wrongChannel, {
-                bot: this.getBotMention(),
                 plantChannel: this.getChannelMention(message, "plants"),
                 potionChannel: this.getChannelMention(message, "potions"),
               })
@@ -122,18 +121,11 @@ export class Stagiaire extends Bot {
               parseInt(matchRoll.groups.semester, 10),
               parseInt(matchRoll.groups.gift, 10),
               () =>
-                this.writeError(
-                  message,
-                  formatString(this.config.messages.errors.wrongGift, {
-                    bot: this.getBotMention(),
-                  })
-                ),
+                this.writeError(message, this.config.messages.errors.wrongGift),
               () =>
                 this.writeError(
                   message,
-                  formatString(this.config.messages.errors.wrongSemester, {
-                    bot: this.getBotMention(),
-                  })
+                  this.config.messages.errors.wrongSemester
                 )
             );
             if (!data.validated) return;
@@ -150,7 +142,7 @@ export class Stagiaire extends Bot {
 
             const content = this.getResult(roll(100), bonus || 0, item, data);
             this.log(content);
-            message.reply(content);
+            this.sendMessage(message, content, true);
             return;
           }
           //#endregion
@@ -185,8 +177,8 @@ export class Stagiaire extends Bot {
         if (isArray(wrongChannels))
           this.writeWrongChannelCommand(message, channel, ...wrongChannels);
         else this.writeWrongChannelCommand(message, channel, wrongChannels);
+        return false;
       }
-      return false;
     }
     switch (trigger) {
       case this.config.triggers.help:
@@ -227,7 +219,6 @@ export class Stagiaire extends Bot {
       formatString(
         this.config.messages.errors.wrongChannelCommand[channel.kind],
         {
-          bot: this.getBotMention(),
           channels: kinds
             .map((kind) => this.getChannelMention(message, kind))
             .join(", "),
@@ -239,26 +230,27 @@ export class Stagiaire extends Bot {
   private writeHelp(message: Message, channel: Channel, command: string) {
     switch (command) {
       case undefined:
-        message.reply(
+        this.sendMessage(
+          message,
           formatString(this.config.messages.help[channel.kind].general, {
-            bot: this.getBotMention(),
             plantChannel: this.getChannelMention(message, "plants"),
             potionChannel: this.getChannelMention(message, "potions"),
-          })
+          }),
+          true
         );
         return;
       case this.config.triggers.list:
-        message.reply(
-          formatString(this.config.messages.help[channel.kind].commands.list, {
-            bot: this.getBotMention(),
-          })
+        this.sendMessage(
+          message,
+          this.config.messages.help[channel.kind].commands.list,
+          true
         );
         return;
       case this.config.triggers[channel.kind].roll:
-        message.reply(
-          formatString(this.config.messages.help[channel.kind].commands.roll, {
-            bot: this.getBotMention(),
-          })
+        this.sendMessage(
+          message,
+          this.config.messages.help[channel.kind].commands.roll,
+          true
         );
         return;
     }
@@ -307,9 +299,7 @@ export class Stagiaire extends Bot {
   private writeItemError(message: Message, channel: Channel) {
     this.writeError(
       message,
-      formatString(this.config.messages.errors.wrongItem[channel.kind], {
-        bot: this.getBotMention(),
-      })
+      this.config.messages.errors.wrongItem[channel.kind]
     );
   }
 
@@ -328,7 +318,12 @@ export class Stagiaire extends Bot {
     return itemBonus.bonus + giftBonus;
   }
 
-  private getResult(roll: number, bonus: number, item: Item, data: InputData) {
+  private getResult(
+    roll: number,
+    bonus: number,
+    item: Item,
+    data: InputData
+  ): string {
     let total = roll + bonus;
     let quantity = 0;
 
@@ -353,7 +348,7 @@ export class Stagiaire extends Bot {
           content.push(
             this.config.messages.results.failure1[item.kind].consequence
           );
-          return;
+          return "";
         case 2:
           content.push(
             formatString(
@@ -368,7 +363,7 @@ export class Stagiaire extends Bot {
           content.push(
             this.config.messages.results.failure2[item.kind].consequence
           );
-          return;
+          return "";
       }
 
       if (total >= 120) {
@@ -385,7 +380,7 @@ export class Stagiaire extends Bot {
             item: item.name,
           })
         );
-        return;
+        return "";
       }
 
       content.push(
@@ -448,20 +443,34 @@ export class Stagiaire extends Bot {
     this.log(
       `Reply "${errorMessage}" to "${message.content}" from ${message.author.tag}`
     );
-    message.reply(errorMessage);
+    this.sendErrorMessage(message, errorMessage);
   }
 
   private writeWrongSyntax(message: Message) {
-    this.writeError(
-      message,
-      formatString(this.config.messages.errors.wrongSyntax, {
-        bot: this.getBotMention(),
-      })
-    );
+    this.writeError(message, this.config.messages.errors.wrongSyntax);
   }
 
-  private getBotMention() {
-    return `<@${this.config.tagBotId}>`;
+  sendErrorMessage(message: Message, content: string) {
+    let finalContent = new Array<String>();
+    finalContent.push(`${this.getUserMention(message.author.id)} :`);
+    finalContent.push(`> *${message.content}*\n`);
+    finalContent.push(content);
+
+    message.channel.send(finalContent.join("\n"));
+    message.delete();
+  }
+
+  sendMessage(message: Message, content: string, ping: boolean) {
+    let finalContent = new Array<String>();
+    finalContent.push(content);
+    if (ping) finalContent.push(this.getUserMention(message.author.id));
+
+    message.channel.send(finalContent.join("\n"));
+    message.react("👌");
+  }
+
+  private getUserMention(id: string) {
+    return `<@${id}>`;
   }
 
   private getChannelMention(message: Message, kind: Items) {
@@ -501,7 +510,11 @@ class PlantChannel {
       );
     });
     if (!items.length) {
-      message.reply(config.messages.list.plants.notFound);
+      this.stagiaire.sendMessage(
+        message,
+        config.messages.list.plants.notFound,
+        true
+      );
       return;
     }
     items.forEach((item) => {
@@ -554,7 +567,10 @@ class PotionChannel {
       );
     });
     if (!items.length) {
-      message.reply(config.messages.list.potions.notFound);
+      this.stagiaire.sendErrorMessage(
+        message,
+        config.messages.list.potions.notFound
+      );
       return;
     }
     items.forEach((item) => {

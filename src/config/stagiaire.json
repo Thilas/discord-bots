@@ -93,35 +93,43 @@
     }
   },
   "bonuses": {
-    "plants": [{
-      "level": 0,
-      "semester": 0,
-      "bonus": 10
-    }],
-    "potions": [{
-      "level": 0,
-      "semester": 0,
-      "bonus": 10
-    }]
+    "plants": [
+      {
+        "level": 0,
+        "semester": 0,
+        "bonus": 10
+      }
+    ],
+    "potions": [
+      {
+        "level": 0,
+        "semester": 0,
+        "bonus": 10
+      }
+    ]
   },
   "categories": ["cat1", "cat2"],
-  "plants": [{
-    "key": ["plant1", "shortcut"],
-    "categories": ["cat1"],
-    "description": "plant 1",
-    "name": "Plant 1",
-    "level": 1,
-    "duration": 1,
-    "usages": ["Potion Vermifuges", "*Les feuilles repoussent les insectes*"]
-  }],
-  "potions": [{
-    "key": ["potion1"],
-    "categories": ["cat2"],
-    "description": "potion 1",
-    "name": "Potion 1",
-    "level": 2,
-    "duration": 2,
-    "valyria": false,
-    "plants": ["plant1"]
-  }]
+  "plants": [
+    {
+      "key": ["plant1", "shortcut"],
+      "categories": ["cat1"],
+      "description": "plant 1",
+      "name": "Plant 1",
+      "level": 1,
+      "duration": 1,
+      "usages": ["Potion Vermifuges", "*Les feuilles repoussent les insectes*"]
+    }
+  ],
+  "potions": [
+    {
+      "key": ["potion1"],
+      "categories": ["cat2"],
+      "description": "potion 1",
+      "name": "Potion 1",
+      "level": 2,
+      "duration": 2,
+      "valyria": false,
+      "plants": ["plant1"]
+    }
+  ]
 }
