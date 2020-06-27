@@ -52,7 +52,7 @@ export class Stagiaire extends Bot {
           //#region Is help trigger?
           const escapedTriggerHelp = escapeRegExp(this.config.triggers.help);
           const regexHelp = new RegExp(
-            `\\b(?<trigger>${escapedTriggerHelp})\\b(?: (?<command>.+))?`
+            `\\b(?<trigger>${escapedTriggerHelp})\\b(?: *(?<command>.*[^ ]))?`
           );
           const matchHelp = message.content.match(regexHelp);
           if (matchHelp && matchHelp.groups) {
@@ -72,7 +72,7 @@ export class Stagiaire extends Bot {
           //#region Is list trigger?
           const escapedTriggerList = escapeRegExp(this.config.triggers.list);
           const regexLists = new RegExp(
-            `\\b(?<trigger>${escapedTriggerList})\\b(?: (?<difficulty>\\d+))?(?: \\((?<ingredient>.+)\\))?(?: (?<category>.+))?`
+            `\\b(?<trigger>${escapedTriggerList})\\b(?: *(?<difficulty>\\d+)\\b)?(?: *\\( *(?<ingredient>.+?)? *\\))?(?: *(?<category>.*[^ ]))?`
           );
           const matchLists = message.content.match(regexLists);
           if (matchLists && matchLists.groups) {
@@ -98,7 +98,7 @@ export class Stagiaire extends Bot {
             .map((id) => escapeRegExp(id))
             .join("|");
           const regexRoll = new RegExp(
-            `\\b(?<trigger>${escapedTriggersRolls})\\b (?<item>.+) \\((?<perso>.+?) (?:(?<bonus>-?\\d+)|(?<semester>-?\\d+) (?<gift>\\d+))\\)`
+            `\\b(?<trigger>${escapedTriggersRolls}) +(?<item>.+?) *\\( *(?<perso>.+?) +(?:(?<bonus>-?\\d+)|(?<semester>-?\\d+) +(?<gift>\\d+)) *\\)`
           );
           const matchRoll = message.content.match(regexRoll);
           if (matchRoll && matchRoll.groups) {
