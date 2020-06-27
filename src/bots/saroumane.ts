@@ -37,7 +37,7 @@ export class Saroumane extends Bot {
 
   constructor(token: string) {
     super(token, (client) => {
-      client.on("message", (message) => {
+      client.on("message", async (message) => {
         const msg = message.content.toUpperCase();
 
         if (
@@ -48,7 +48,7 @@ export class Saroumane extends Bot {
           this.log(
             `Reply "${answer}" to "${message.content}" from ${message.author.tag}`
           );
-          message.reply(answer);
+          await message.reply(answer);
         } else if (
           msg.substring(0, this.config.triggers.whichPlayer.length) ===
           this.config.triggers.whichPlayer
@@ -57,7 +57,7 @@ export class Saroumane extends Bot {
           this.log(
             `Reply "${answer}" to "${message.content}" from ${message.author.tag}`
           );
-          message.reply(answer);
+          await message.reply(answer);
         } else if (
           msg.substring(0, this.config.triggers.whichCharacter.length) ===
           this.config.triggers.whichCharacter
@@ -66,7 +66,7 @@ export class Saroumane extends Bot {
           this.log(
             `Reply "${answer}" to "${message.content}" from ${message.author.tag}`
           );
-          message.reply(answer);
+          await message.reply(answer);
         } else if (
           msg.substring(0, this.config.triggers.who.length) ===
           this.config.triggers.who
@@ -75,7 +75,7 @@ export class Saroumane extends Bot {
           this.log(
             `Reply "${answer}" to "${message.content}" from ${message.author.tag}`
           );
-          message.reply(answer);
+          await message.reply(answer);
         } else if (
           msg.substring(0, this.config.triggers.bawdySong.length) ===
           this.config.triggers.bawdySong
@@ -84,7 +84,7 @@ export class Saroumane extends Bot {
           this.log(
             `Reply "${song}" to "${message.content}" from ${message.author.tag}`
           );
-          message.reply(song);
+          await message.reply(song);
         } else if (
           msg.substring(0, this.config.triggers.makeMeSweat.length) ===
           this.config.triggers.makeMeSweat
@@ -96,7 +96,7 @@ export class Saroumane extends Bot {
           this.log(
             `Reply "${fit}" to "${message.content}" from ${message.author.tag}`
           );
-          message.channel.send(maso + ", " + fit);
+          await message.channel.send(maso + ", " + fit);
         }
       });
     });
