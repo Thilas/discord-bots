@@ -1,6 +1,6 @@
 import discord from "discord.js";
 
-/** Abstract class for any bot. */
+/** Abstract class for bots. */
 export abstract class Bot {
   private readonly name = this.constructor.name;
   private readonly client = new discord.Client();
@@ -34,12 +34,12 @@ export abstract class Bot {
   }
 
   /** Prints to `stdout` with newline for the bot. */
-  protected log(message?: any, ...optionalParams: any[]) {
-    console.log(`[${this.name}] ${message}`, ...optionalParams);
+  protected log(message: string) {
+    console.log(`[${this.name}] ${message}`);
   }
 
   /** Prints to `stderr` with newline for the bot. */
-  private error(message?: any, ...optionalParams: any[]) {
-    console.error(`[${this.name}] ${message}`, ...optionalParams);
+  protected error(message: string) {
+    console.error(`[${this.name}] ${message}`);
   }
 }

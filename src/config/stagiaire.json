@@ -45,42 +45,40 @@
       "failures": {
         "1": {
           "plants": "plant result for failure 1: time={time}, perso={perso}, item={item}",
-          "potions": [
-            {
-              "level": "1",
-              "messages": [
-                "potion result for failure 1: time={time}, perso={perso}, item={item}, color={color}",
-                {
-                  "message": "potion result for failure 1: time={time}, perso={perso}, item={item}, color={color}, custom={custom}",
-                  "custom": ["a", "b"]
-                }
-              ]
-            }
-          ]
+          "potions": [{
+            "level": 1,
+            "messages": [
+              "potion result for failure 1: time={time}, perso={perso}, item={item}, color={color}",
+              {
+                "message": "potion result for failure 1: time={time}, perso={perso}, item={item}, color={color}, arg1={arg1}, arg2={arg2}",
+                "arg1": "val1",
+                "arg2": ["val2a", "val2b"]
+              }
+            ]
+          }]
         },
         "2": {
           "plants": "plant result for failure 2: time={time}, perso={perso}, item={item}",
-          "potions": [
-            {
-              "level": "1",
-              "messages": [
-                "potion result for failure 2: time={time}, perso={perso}, item={item}, color={color}",
-                {
-                  "message": "potion result for failure 2: time={time}, perso={perso}, item={item}, color={color}, custom={custom}",
-                  "custom": ["a", "b"]
-                }
-              ]
-            }
-          ]
+          "potions": [{
+            "level": 1,
+            "messages": [
+              "potion result for failure 2: time={time}, perso={perso}, item={item}, color={color}",
+              {
+                "message": "potion result for failure 2: time={time}, perso={perso}, item={item}, color={color}, arg1={arg1}, arg2={arg2}",
+                "arg1": "val1",
+                "arg2": ["val2a", "val2b"]
+              }
+            ]
+          }]
         }
       },
       "missed": {
         "plants": "missed plant: time={time}, perso={perso}, item={item}",
-        "potions": "missed potion: time={time}, perso={perso}, item={item}"
+        "potions": "missed potion: time={time}, perso={perso}, item={item}, color={color}"
       },
       "success": {
         "plants": "plant success: time={time}, perso={perso}, quantity={quantity}, item={item}",
-        "potions": "potion success: time={time}, perso={perso}, quantity={quantity}, item={item}"
+        "potions": "potion success: time={time}, perso={perso}, quantity={quantity}, item={item}, color={color}"
       },
       "logs": {
         "plants": "*(Roll: {roll} | Bonus: {bonus})*",
@@ -105,43 +103,36 @@
     }
   },
   "bonuses": {
-    "plants": [
-      {
-        "level": 0,
-        "semester": 0,
-        "bonus": 10
-      }
-    ],
-    "potions": [
-      {
-        "level": 0,
-        "semester": 0,
-        "bonus": 10
-      }
-    ]
+    "plants": [{
+      "level": 0,
+      "semester": 0,
+      "bonus": 10
+    }],
+    "potions": [{
+      "level": 0,
+      "semester": 0,
+      "bonus": 10
+    }]
   },
   "categories": ["cat1", "cat2"],
-  "plants": [
-    {
-      "key": ["plant1", "shortcut"],
-      "categories": ["cat1"],
-      "description": "plant 1",
-      "name": "Plant 1",
-      "level": 1,
-      "duration": 1,
-      "usages": ["Potion Vermifuges", "*Les feuilles repoussent les insectes*"]
-    }
-  ],
-  "potions": [
-    {
-      "key": ["potion1"],
-      "categories": ["cat2"],
-      "description": "potion 1",
-      "name": "Potion 1",
-      "level": 2,
-      "duration": 2,
-      "valyria": false,
-      "plants": ["plant1"]
-    }
-  ]
+  "plants": [{
+    "key": ["plant1", "shortcut"],
+    "categories": ["cat1"],
+    "description": "plant 1",
+    "name": "Plant 1",
+    "level": 1,
+    "duration": 1,
+    "usages": ["Potion Vermifuges", "*Les feuilles repoussent les insectes*"]
+  }],
+  "potions": [{
+    "key": ["potion1"],
+    "categories": ["cat2"],
+    "description": "potion 1",
+    "name": "Potion 1",
+    "level": 2,
+    "duration": 2,
+    "valyria": false,
+    "plants": ["plant1"],
+    "color": "red"
+  }]
 }

@@ -1,6 +1,9 @@
 export const locale = "fr-FR";
 export const timeZone = "Europe/Paris";
 
+export interface Args {
+  [key: string]: any;
+}
 export interface Groups {
   [key: string]: string;
 }
@@ -28,6 +31,10 @@ export function roll(max: number, dices?: number) {
   }
 }
 
+export function getRandom<T>(items: T[]) {
+  return items[roll(items.length) - 1];
+}
+
 export function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -36,11 +43,11 @@ export function notEmpty<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined;
 }
 
-export function formatString(format: string, args: any) {
-  return format.replace(/{{|}}|{(\w+)}/g, function (match, name): any {
+export function formatString(format: string, args: Args) {
+  return format.replace(/{{|}}|{(\w+)}/g, function (match, name) {
     if (name) {
       const value = args[name];
-      return `${value}` || "";
+      return `${value}`;
     } else {
       switch (match) {
         case "{{":
@@ -49,6 +56,7 @@ export function formatString(format: string, args: any) {
           return "}";
       }
     }
+    return match;
   });
 }
 
@@ -58,4 +66,15 @@ export function localeEquals(left: string, right: string) {
       sensitivity: "base",
     }) === 0
   );
+}
+
+export function omit<T, K extends keyof T>(o: T, p: K): Omit<T, K> {
+  const result = {} as Omit<T, K>;
+  Object.keys(o)
+    .filter((k) => p !== k)
+    .forEach((k) => {
+      const m = <keyof Omit<T, K>>k;
+      result[m] = o[m];
+    });
+  return result;
 }
