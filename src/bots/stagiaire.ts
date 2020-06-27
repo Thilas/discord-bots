@@ -1,5 +1,4 @@
 import { Message } from "discord.js";
-import { isArray } from "util";
 import { loadAndWatch } from "../config";
 import stagiaireConfig from "../config/stagiaire.json";
 import {
@@ -174,9 +173,11 @@ export class Stagiaire extends Bot {
     if (getWrongChannels) {
       const wrongChannels = getWrongChannels(this.config);
       if (wrongChannels) {
-        if (isArray(wrongChannels))
+        if (Array.isArray(wrongChannels)) {
           this.writeWrongChannelCommand(message, channel, ...wrongChannels);
-        else this.writeWrongChannelCommand(message, channel, wrongChannels);
+        } else {
+          this.writeWrongChannelCommand(message, channel, wrongChannels);
+        }
         return false;
       }
     }
@@ -311,9 +312,7 @@ export class Stagiaire extends Bot {
     const itemBonus = this.config.bonuses[item.kind].find(
       (id) => id.level === item.level && id.semester === data.semester
     );
-    if (!itemBonus) {
-      return;
-    }
+    if (!itemBonus) return;
     const giftBonus = data.gift ? 15 : 0;
     return itemBonus.bonus + giftBonus;
   }
@@ -335,34 +334,10 @@ export class Stagiaire extends Bot {
           quantity += 1;
           break;
         case 1:
-          content.push(
-            formatString(
-              this.config.messages.results.failure1[item.kind].result,
-              {
-                time: this.getTime(item),
-                perso: data.perso,
-                item: item.name,
-              }
-            )
-          );
-          content.push(
-            this.config.messages.results.failure1[item.kind].consequence
-          );
+          content.push(this.getFailure(1, item, data));
           return "";
         case 2:
-          content.push(
-            formatString(
-              this.config.messages.results.failure2[item.kind].result,
-              {
-                time: this.getTime(item),
-                perso: data.perso,
-                item: item.name,
-              }
-            )
-          );
-          content.push(
-            this.config.messages.results.failure2[item.kind].consequence
-          );
+          content.push(this.getFailure(2, item, data));
           return "";
       }
 
@@ -414,6 +389,35 @@ export class Stagiaire extends Bot {
       }
       return content.join("\n");
     }
+  }
+
+  private getFailure(no: 1 | 2, item: Item, data: InputData) {
+    const failure = this.config.messages.results.failures[no][item.kind];
+    if (typeof failure === "string") {
+      return this.formatFailure(failure, item, data);
+    }
+
+    const level = failure.find((item) => item.level === item.level);
+    if (!level) {
+      throw "Error!";
+    }
+    roll;
+    level.messages;
+    return "";
+  }
+
+  private formatFailure(
+    message: string,
+    item: Item,
+    data: InputData,
+    extraArgs?: any
+  ) {
+    return formatString(message, {
+      time: this.getTime(item),
+      perso: data.perso,
+      item: item.name,
+      ...extraArgs,
+    });
   }
 
   private getTime(item: Item): string {
@@ -495,8 +499,9 @@ class PlantChannel {
       trigger,
       groups,
       (config) => {
-        if (trigger === config.triggers.list && groups.ingredient)
+        if (trigger === config.triggers.list && groups.ingredient) {
           return "plants";
+        }
       }
     );
   }

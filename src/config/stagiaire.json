@@ -42,24 +42,36 @@
       }
     },
     "results": {
-      "failure1": {
-        "plants": {
-          "result": "plant result for failure 1: time={time}, perso={perso}, item={item}",
-          "consequence": "plant consequence for failure 1"
+      "failures": {
+        "1": {
+          "plants": "plant result for failure 1: time={time}, perso={perso}, item={item}",
+          "potions": [
+            {
+              "level": "1",
+              "messages": [
+                "potion result for failure 1: time={time}, perso={perso}, item={item}, color={color}",
+                {
+                  "message": "potion result for failure 1: time={time}, perso={perso}, item={item}, color={color}, custom={custom}",
+                  "custom": ["a", "b"]
+                }
+              ]
+            }
+          ]
         },
-        "potions": {
-          "result": "potion result for failure 1: time={time}, perso={perso}, item={item}",
-          "consequence": "potion consequence for failure 1"
-        }
-      },
-      "failure2": {
-        "plants": {
-          "result": "plant result for failure 2: time={time}, perso={perso}, item={item}",
-          "consequence": "plant consequence for failure 2"
-        },
-        "potions": {
-          "result": "potion result for failure 2: time={time}, perso={perso}, item={item}",
-          "consequence": "potion consequence for failure 2"
+        "2": {
+          "plants": "plant result for failure 2: time={time}, perso={perso}, item={item}",
+          "potions": [
+            {
+              "level": "1",
+              "messages": [
+                "potion result for failure 2: time={time}, perso={perso}, item={item}, color={color}",
+                {
+                  "message": "potion result for failure 2: time={time}, perso={perso}, item={item}, color={color}, custom={custom}",
+                  "custom": ["a", "b"]
+                }
+              ]
+            }
+          ]
         }
       },
       "missed": {
