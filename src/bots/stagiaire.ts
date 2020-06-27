@@ -1,14 +1,16 @@
 import { Message } from "discord.js";
-import { isArray } from "util";
 import { loadAndWatch } from "../config";
 import stagiaireConfig from "../config/stagiaire.json";
 import {
+  Args,
   escapeRegExp,
   formatString,
+  getRandom,
   Groups,
   locale,
   localeEquals,
   notEmpty,
+  omit,
   roll,
   timeZone,
 } from "../utils";
@@ -174,9 +176,11 @@ export class Stagiaire extends Bot {
     if (getWrongChannels) {
       const wrongChannels = getWrongChannels(this.config);
       if (wrongChannels) {
-        if (isArray(wrongChannels))
+        if (Array.isArray(wrongChannels)) {
           this.writeWrongChannelCommand(message, channel, ...wrongChannels);
-        else this.writeWrongChannelCommand(message, channel, wrongChannels);
+        } else {
+          this.writeWrongChannelCommand(message, channel, wrongChannels);
+        }
         return false;
       }
     }
@@ -292,7 +296,8 @@ export class Stagiaire extends Bot {
       potion.name,
       potion.level,
       potion.duration,
-      potion.plants.map((id) => this.getPlant(id)).filter(notEmpty)
+      potion.plants.map((id) => this.getPlant(id)).filter(notEmpty),
+      potion.color
     );
   }
 
@@ -311,9 +316,7 @@ export class Stagiaire extends Bot {
     const itemBonus = this.config.bonuses[item.kind].find(
       (id) => id.level === item.level && id.semester === data.semester
     );
-    if (!itemBonus) {
-      return;
-    }
+    if (!itemBonus) return;
     const giftBonus = data.gift ? 15 : 0;
     return itemBonus.bonus + giftBonus;
   }
@@ -324,96 +327,101 @@ export class Stagiaire extends Bot {
     item: Item,
     data: InputData
   ): string {
-    let total = roll + bonus;
+    const content = [
+      this.getRollResult(roll, bonus, item, data),
+      formatString(this.config.messages.results.logs[item.kind], {
+        roll: roll,
+        bonus: bonus,
+        ingredients:
+          item.kind === "potions"
+            ? item.plants.map((plant) => plant.name).join(", ") || "aucun"
+            : undefined,
+      }),
+    ];
+    return content.join("\n");
+  }
+
+  private getRollResult(
+    roll: number,
+    bonus: number,
+    item: Item,
+    data: InputData
+  ) {
+    const total = roll + bonus;
     let quantity = 0;
 
-    let content = new Array<string>();
-    try {
-      switch (roll) {
-        case 100:
-        case 99:
-          quantity += 1;
-          break;
-        case 1:
-          content.push(
-            formatString(
-              this.config.messages.results.failure1[item.kind].result,
-              {
-                time: this.getTime(item),
-                perso: data.perso,
-                item: item.name,
-              }
-            )
-          );
-          content.push(
-            this.config.messages.results.failure1[item.kind].consequence
-          );
-          return "";
-        case 2:
-          content.push(
-            formatString(
-              this.config.messages.results.failure2[item.kind].result,
-              {
-                time: this.getTime(item),
-                perso: data.perso,
-                item: item.name,
-              }
-            )
-          );
-          content.push(
-            this.config.messages.results.failure2[item.kind].consequence
-          );
-          return "";
-      }
-
-      if (total >= 120) {
-        quantity += 4;
-      } else if (total >= 100) {
-        quantity += 3;
-      } else if (total >= 50) {
-        quantity += 2;
-      } else {
-        content.push(
-          formatString(this.config.messages.results.missed[item.kind], {
-            time: this.getTime(item),
-            perso: data.perso,
-            item: item.name,
-          })
-        );
-        return "";
-      }
-
-      content.push(
-        formatString(this.config.messages.results.success[item.kind], {
-          time: this.getTime(item),
-          perso: data.perso,
-          quantity: quantity,
-          item: item.name,
-        })
-      );
-    } finally {
-      switch (item.kind) {
-        case "potions":
-          content.push(
-            formatString(this.config.messages.results.logs[item.kind], {
-              roll: roll,
-              bonus: bonus,
-              ingredients:
-                item.plants.map((plant) => plant.name).join(", ") || "aucun",
-            })
-          );
-          break;
-        default:
-          content.push(
-            formatString(this.config.messages.results.logs[item.kind], {
-              roll: roll,
-              bonus: bonus,
-            })
-          );
-          break;
-      }
-      return content.join("\n");
+    switch (roll) {
+      case 1:
+      case 2:
+        return this.getFailureResult(roll, item, data);
+      case 99:
+      case 100:
+        quantity += 1;
+        break;
     }
+
+    if (total >= 120) {
+      quantity += 4;
+    } else if (total >= 100) {
+      quantity += 3;
+    } else if (total >= 50) {
+      quantity += 2;
+    } else {
+      return this.formatResult(
+        this.config.messages.results.missed[item.kind],
+        item,
+        data
+      );
+    }
+
+    return this.formatResult(
+      this.config.messages.results.success[item.kind],
+      item,
+      data,
+      { quantity: quantity }
+    );
+  }
+
+  private getFailureResult(no: 1 | 2, item: Item, data: InputData) {
+    const failure = this.config.messages.results.failures[no][item.kind];
+    if (typeof failure === "string") {
+      return this.formatResult(failure, item, data);
+    }
+
+    const level = failure.find((i) => i.level === item.level);
+    if (!level) {
+      throw `Unknown failure level "${item.level}" in "${item.name}"`;
+    }
+
+    const message = getRandom(level.messages);
+    if (typeof message === "string") {
+      return this.formatResult(message, item, data);
+    }
+
+    const extraArgs = omit(message, "message");
+    return this.formatResult(message.message, item, data, extraArgs);
+  }
+
+  private formatResult(
+    message: string,
+    item: Item,
+    data: InputData,
+    extraArgs?: Args
+  ) {
+    let args: Args = {
+      time: this.getTime(item),
+      perso: data.perso,
+      item: item.name,
+    };
+    if ("color" in item) {
+      args.color = item.color;
+    }
+    if (extraArgs) {
+      Object.entries(extraArgs).forEach(([key, value]) => {
+        args[key] = Array.isArray(value) ? getRandom(value) : value;
+      });
+    }
+    return formatString(message, args);
   }
 
   private getTime(item: Item): string {
@@ -451,18 +459,18 @@ export class Stagiaire extends Bot {
   }
 
   sendErrorMessage(message: Message, content: string) {
-    let finalContent = new Array<String>();
-    finalContent.push(`${this.getUserMention(message.author.id)} :`);
-    finalContent.push(`> *${message.content}*\n`);
-    finalContent.push(content);
+    const finalContent = [
+      `${this.getUserMention(message.author.id)} :`,
+      `> *${message.content}*\n`,
+      content,
+    ];
 
     message.channel.send(finalContent.join("\n"));
     message.delete();
   }
 
   sendMessage(message: Message, content: string, ping: boolean) {
-    let finalContent = new Array<String>();
-    finalContent.push(content);
+    const finalContent = [content];
     if (ping) finalContent.push(this.getUserMention(message.author.id));
 
     message.channel.send(finalContent.join("\n"));
@@ -495,8 +503,9 @@ class PlantChannel {
       trigger,
       groups,
       (config) => {
-        if (trigger === config.triggers.list && groups.ingredient)
+        if (trigger === config.triggers.list && groups.ingredient) {
           return "plants";
+        }
       }
     );
   }
@@ -619,7 +628,8 @@ class Potion {
     readonly name: string,
     readonly level: number,
     readonly duration: number,
-    readonly plants: Plant[]
+    readonly plants: Plant[],
+    readonly color: string
   ) {}
 }
 //#endregion

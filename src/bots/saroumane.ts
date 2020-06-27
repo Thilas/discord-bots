@@ -1,6 +1,6 @@
 import { loadAndWatch } from "../config";
 import saroumaneConfig from "../config/saroumane.json";
-import { roll } from "../utils";
+import { getRandom, roll } from "../utils";
 import { Bot } from "./bot";
 
 export class Saroumane extends Bot {
@@ -103,36 +103,28 @@ export class Saroumane extends Bot {
   }
 
   private getSong() {
-    return this.config.songs[roll(this.config.songs.length) - 1];
+    return getRandom(this.config.songs);
   }
 
   private getAnswerTellMe() {
-    const answers = this.config.answers.tellMe[
-      roll(this.config.answers.tellMe.length) - 1
-    ];
-    return answers[roll(answers.length) - 1];
+    const answers = getRandom(this.config.answers.tellMe);
+    return getRandom(answers);
   }
 
   private getTypeAnswerWho() {
-    const answers = this.config.answers.who[
-      roll(this.config.answers.who.length) - 1
-    ];
-    return answers[roll(answers.length) - 1];
+    const answers = getRandom(this.config.answers.who);
+    return getRandom(answers);
   }
 
   private getAnswerWhichPlayer() {
     const answer = this.getTypeAnswerWho();
-    const player = this.config.answers.players[
-      roll(this.config.answers.players.length) - 1
-    ];
+    const player = getRandom(this.config.answers.players);
     return answer.replace("*", player);
   }
 
   private getAnswerWhichCharacter() {
     const answer = this.getTypeAnswerWho();
-    const character = this.config.answers.characters[
-      roll(this.config.answers.characters.length) - 1
-    ];
+    const character = getRandom(this.config.answers.characters);
     return answer.replace("*", character);
   }
 
@@ -141,11 +133,11 @@ export class Saroumane extends Bot {
     const names = this.config.answers.players.concat(
       this.config.answers.characters
     );
-    return names[roll(names.length) - 1];
+    return getRandom(names);
   }
 
   private getFit() {
-    const exercise = this.config.fit[roll(this.config.fit.length) - 1];
+    const exercise = getRandom(this.config.fit);
     const points = roll(5);
     const rollMalus = roll(100);
 
