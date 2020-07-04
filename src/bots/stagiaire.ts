@@ -1,4 +1,4 @@
-import { Message } from "discord.js";
+import { Message, Role, User } from "discord.js";
 import { loadAndWatch } from "../config";
 import stagiaireConfig from "../config/stagiaire.json";
 import {
@@ -30,10 +30,17 @@ export class Stagiaire extends Bot {
     super(token, (client) => {
       client.on("message", async (message) => {
         // Is stagiaire bot mentioned?
+        const botUser = await client.users.fetch(this.config.tagBotId);
+        const botRoles = (
+          await Promise.all(
+            this.config.tagBotRoles.map((id) => message.guild?.roles.fetch(id))
+          )
+        ).filter(notEmpty);
+        const isMentioned = (data: User | Role) =>
+          message.mentions.has(data, { ignoreEveryone: true });
         if (
           message.author.id !== this.config.tagBotId &&
-          (message.isMentioned(this.config.tagBotId) ||
-            this.config.tagBotRoles.some((role) => message.isMentioned(role)))
+          (isMentioned(botUser) || botRoles.some(isMentioned))
         ) {
           //#region Is channel supported?
           const channel = this.getChannel(message);
@@ -41,8 +48,8 @@ export class Stagiaire extends Bot {
             await this.writeError(
               message,
               formatString(this.config.messages.errors.wrongChannel, {
-                plantChannel: this.getChannelMention(message, "plants"),
-                potionChannel: this.getChannelMention(message, "potions"),
+                plantChannel: await this.getDiscordChannel(message, "plants"),
+                potionChannel: await this.getDiscordChannel(message, "potions"),
               })
             );
             return;
@@ -227,9 +234,11 @@ export class Stagiaire extends Bot {
       formatString(
         this.config.messages.errors.wrongChannelCommand[channel.kind],
         {
-          channels: kinds
-            .map((kind) => this.getChannelMention(message, kind))
-            .join(", "),
+          channels: (
+            await Promise.all(
+              kinds.map((kind) => this.getDiscordChannel(message, kind))
+            )
+          ).join(", "),
         }
       )
     );
@@ -241,8 +250,8 @@ export class Stagiaire extends Bot {
         return this.sendMessage(
           message,
           formatString(this.config.messages.help[channel.kind].general, {
-            plantChannel: this.getChannelMention(message, "plants"),
-            potionChannel: this.getChannelMention(message, "potions"),
+            plantChannel: await this.getDiscordChannel(message, "plants"),
+            potionChannel: await this.getDiscordChannel(message, "potions"),
           }),
           true
         );
@@ -455,7 +464,7 @@ export class Stagiaire extends Bot {
 
   async sendErrorMessage(message: Message, content: string) {
     const finalContent = [
-      `${this.getUserMention(message.author.id)} :`,
+      `${message.author} :`,
       `> *${message.content}*\n`,
       content,
     ];
@@ -466,19 +475,15 @@ export class Stagiaire extends Bot {
 
   async sendMessage(message: Message, content: string, ping: boolean) {
     const finalContent = [content];
-    if (ping) finalContent.push(this.getUserMention(message.author.id));
+    if (ping) finalContent.push(`${message.author}`);
 
     await message.channel.send(finalContent.join("\n"));
     await message.react("👌");
   }
 
-  private getUserMention(id: string) {
-    return `<@${id}>`;
-  }
-
-  private getChannelMention(message: Message, kind: Items) {
-    return message.client.channels.find(
-      (channel) => channel.id === this.config.triggers[kind].chanPlayers
+  private async getDiscordChannel(message: Message, kind: Items) {
+    return message.client.channels.fetch(
+      this.config.triggers[kind].chanPlayers
     );
   }
   //#endregion

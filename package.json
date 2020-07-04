@@ -10,9 +10,10 @@
   },
   "devDependencies": {
     "@types/node": "^14.0.14",
+    "@types/ws": "^7.2.6",
     "typescript": "^3.9.6"
   },
   "dependencies": {
-    "discord.js": "^11.5.1"
+    "discord.js": "^12.2.0"
   }
 }

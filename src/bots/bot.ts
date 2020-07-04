@@ -17,8 +17,9 @@ export abstract class Bot {
     this.client
       .on("disconnect", () => this.log("Disconnected"))
       .on("error", (error) => this.error(`Error: ${error}`))
-      .on("ready", () => this.log(`Logged in as ${this.client.user.tag}!`))
-      .on("reconnecting", () => this.log("Reconnecting..."))
+      .on("ready", () =>
+        this.log(`Logged in as ${this.client.user?.tag ?? "<unknown>"}!`)
+      )
       .on("warn", (info) => this.error(`Warning: ${info}`));
     builder(this.client);
   }
