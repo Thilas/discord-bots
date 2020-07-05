@@ -24,11 +24,26 @@ type Config = Stagiaire["config"];
 
 export class Stagiaire extends Bot {
   private config = loadAndWatch("stagiaire.json", stagiaireConfig, (config) => {
-    this.log(`Triggers: rollPlant='${config.triggers.plants.roll}',
-      rollPotion='${config.triggers.potions.roll}'`);
-
+    this.log(
+      `Bot: id='${config.tagBotId}', roles='${config.tagBotRoles.join(", ")}'`
+    );
+    this.log(
+      `Plants: #=${config.plants.length}, trigger='${
+        config.triggers.plants.roll
+      }', chanPlayers='${config.triggers.plants.chanPlayers}', chanMJ='${
+        config.triggers.plants.chanMJ
+      }', MJ='${config.triggers.plants.MJ.join(", ")}'`
+    );
+    this.log(
+      `Potions: #=${config.potions.length}, trigger='${
+        config.triggers.potions.roll
+      }', chanPlayers='${config.triggers.potions.chanPlayers}', chanMJ='${
+        config.triggers.potions.chanMJ
+      }', MJ='${config.triggers.potions.MJ.join(", ")}'`
+    );
+    this.log(`Categories: ${config.categories.join(", ")}`);
     this.config = config;
-    this.setDisplayTransactionsCron();
+    this.setDisplayTransactionsCron(true);
   });
 
   private summaryCron: Cron.ScheduledTask;
@@ -270,14 +285,17 @@ export class Stagiaire extends Bot {
   }
   //#endregion
   //#region Transactions Summary
-  private setDisplayTransactionsCron() {
+  private setDisplayTransactionsCron(reload?: boolean) {
     if (Cron.validate(this.config.summary.cron)) {
       this.summaryCron?.destroy();
-      this.summaryCron = Cron.schedule(
-        this.config.summary.cron,
-        () => this.displayTransactions(this.client),
-        { timezone: timeZone }
-      );
+      this.log(`Setting cron of summary: ${this.config.summary.cron}`);
+      if (!reload || this.summaryCron) {
+        this.summaryCron = Cron.schedule(
+          this.config.summary.cron,
+          () => this.displayTransactions(this.client),
+          { timezone: timeZone }
+        );
+      }
     } else {
       this.error(`Invalid summary cron: ${this.config.summary.cron}`);
     }
