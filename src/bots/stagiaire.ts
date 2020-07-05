@@ -303,7 +303,11 @@ export class Stagiaire extends Bot {
 
         let contentPlant = persoContent.transactions
           .filter(
-            (t) => t.kind === "plants" && t.toBeStored && !t.storedInInventory
+            (t) =>
+              t.kind === "plants" &&
+              t.toBeStored &&
+              !t.storedInInventory &&
+              t.received
           )
           .map((t) => {
             t.storedInInventory = true;
@@ -325,7 +329,11 @@ export class Stagiaire extends Bot {
         let contentPotion: string[] = [];
         persoContent.transactions
           .filter(
-            (t) => t.kind === "potions" && t.toBeStored && !t.storedInInventory
+            (t) =>
+              t.kind === "potions" &&
+              t.toBeStored &&
+              !t.storedInInventory &&
+              t.received
           )
           .forEach((t) => {
             t.storedInInventory = true;
