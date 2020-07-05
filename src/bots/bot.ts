@@ -1,9 +1,9 @@
-import discord from "discord.js";
+import { Client } from "discord.js";
 
 /** Abstract class for bots. */
 export abstract class Bot {
   private readonly name = this.constructor.name;
-  private readonly client = new discord.Client();
+  private readonly client = new Client();
 
   /**
    * @param token Token of the account to log in with.
@@ -11,17 +11,17 @@ export abstract class Bot {
    */
   protected constructor(
     private readonly token: string,
-    builder: (client: discord.Client) => void
+    builder: (client: Client) => void
   ) {
     this.log("Starting...");
     this.client
       .on("disconnect", () => this.log("Disconnected"))
       .on("error", (error) => this.error(`Error: ${error}`))
-      .on("ready", () =>
-        this.log(`Logged in as ${this.client.user?.tag ?? "<unknown>"}!`)
-      )
+      .on("ready", () => {
+        this.log(`Logged in as ${this.client.user?.tag ?? "<unknown>"}!`);
+        builder(this.client);
+      })
       .on("warn", (info) => this.error(`Warning: ${info}`));
-    builder(this.client);
   }
 
   /** Starts the bot, logging it in, and establishing a websocket connection to Discord. */
