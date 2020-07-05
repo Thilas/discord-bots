@@ -27,23 +27,21 @@ export class Stagiaire extends Bot {
     this.log(
       `Bot: id='${config.tagBotId}', roles='${config.tagBotRoles.join(", ")}'`
     );
-    this.log(
-      `Plants: #=${config.plants.length}, trigger='${
-        config.triggers.plants.roll
-      }', chanPlayers='${config.triggers.plants.chanPlayers}', chanMJ='${
-        config.triggers.plants.chanMJ
-      }', MJ='${config.triggers.plants.MJ.join(", ")}'`
-    );
-    this.log(
-      `Potions: #=${config.potions.length}, trigger='${
-        config.triggers.potions.roll
-      }', chanPlayers='${config.triggers.potions.chanPlayers}', chanMJ='${
-        config.triggers.potions.chanMJ
-      }', MJ='${config.triggers.potions.MJ.join(", ")}'`
-    );
+    this.log(`Plants: #=${config.plants.length},
+      trigger='${config.triggers.plants.roll}',
+      chanPlayers='${config.triggers.plants.chanPlayers}',
+      chanMJ='${config.triggers.plants.chanMJ}',
+      MJ='${config.triggers.plants.MJ.join(", ")}'`);
+    this.log(`Potions: #=${config.potions.length},
+      trigger='${config.triggers.potions.roll}',
+      chanPlayers='${config.triggers.potions.chanPlayers}',
+      chanMJ='${config.triggers.potions.chanMJ}',
+      MJ='${config.triggers.potions.MJ.join(", ")}'`);
     this.log(`Categories: ${config.categories.join(", ")}`);
+    this.log(`Summary: cron='${config.summary.cron}'`);
     this.config = config;
-    this.setDisplayTransactionsCron(true);
+    if (!this.setDisplayTransactionsCron(true))
+      this.error("Invalid summary cron");
   });
 
   private summaryCron: Cron.ScheduledTask;
@@ -286,19 +284,16 @@ export class Stagiaire extends Bot {
   //#endregion
   //#region Transactions Summary
   private setDisplayTransactionsCron(reload?: boolean) {
-    if (Cron.validate(this.config.summary.cron)) {
-      this.summaryCron?.destroy();
-      this.log(`Setting cron of summary: ${this.config.summary.cron}`);
-      if (!reload || this.summaryCron) {
-        this.summaryCron = Cron.schedule(
-          this.config.summary.cron,
-          () => this.displayTransactions(this.client),
-          { timezone: timeZone }
-        );
-      }
-    } else {
-      this.error(`Invalid summary cron: ${this.config.summary.cron}`);
+    if (!Cron.validate(this.config.summary.cron)) return false;
+    this.summaryCron?.destroy();
+    if (!reload || this.summaryCron) {
+      this.summaryCron = Cron.schedule(
+        this.config.summary.cron,
+        () => this.displayTransactions(this.client),
+        { timezone: timeZone }
+      );
     }
+    return true;
   }
 
   private async displayTransactions(client: Client) {
