@@ -27,11 +27,11 @@ export class Stagiaire extends Bot {
     this.log(`Triggers: rollPlant='${config.triggers.plants.roll}',
       rollPotion='${config.triggers.potions.roll}'`);
 
-    if (!Cron.validate(config.summary.cron))
-      this.error("Invalid summary cron.");
-
     this.config = config;
+    this.setDisplayTransactionsCron();
   });
+
+  private summaryCron: Cron.ScheduledTask;
 
   constructor(token: string) {
     super(token, (client) => {
@@ -134,15 +134,9 @@ export class Stagiaire extends Bot {
           return;
         }
       });
+      this.setDisplayTransactionsCron();
       // DEBUG:
       // this.displayTransactions(client);
-      if (Cron.validate(this.config.summary.cron)) {
-        Cron.schedule(
-          this.config.summary.cron,
-          () => this.displayTransactions(client),
-          { timezone: timeZone }
-        );
-      }
       this.resetMissingTransactionsTimers(client);
     });
   }
@@ -276,6 +270,19 @@ export class Stagiaire extends Bot {
   }
   //#endregion
   //#region Transactions Summary
+  private setDisplayTransactionsCron() {
+    if (Cron.validate(this.config.summary.cron)) {
+      this.summaryCron?.destroy();
+      this.summaryCron = Cron.schedule(
+        this.config.summary.cron,
+        () => this.displayTransactions(this.client),
+        { timezone: timeZone }
+      );
+    } else {
+      this.error(`Invalid summary cron: ${this.config.summary.cron}`);
+    }
+  }
+
   private async displayTransactions(client: Client) {
     const storage = this.getStorage();
     if (!storage) return;

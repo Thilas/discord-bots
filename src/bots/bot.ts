@@ -2,8 +2,8 @@ import { Client } from "discord.js";
 
 /** Abstract class for bots. */
 export abstract class Bot {
-  private readonly name = this.constructor.name;
-  private readonly client = new Client();
+  protected readonly name = this.constructor.name;
+  protected readonly client = new Client();
 
   /**
    * @param token Token of the account to log in with.
