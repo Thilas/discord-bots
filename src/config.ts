@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import appConfig from "./config/app.json";
 
-const configName = process.env.NODE_ENV || "development";
+export const configName = process.env.NODE_ENV || "development";
 
 /** Global config. */
 export const app = load("app.json", appConfig);

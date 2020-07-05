@@ -3,7 +3,7 @@ import fs from "fs";
 import Cron from "node-cron";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { loadAndWatch } from "../config";
+import { configName, loadAndWatch } from "../config";
 import stagiaireConfig from "../config/stagiaire.json";
 import {
   Args,
@@ -63,7 +63,6 @@ export class Stagiaire extends Bot {
             return;
           }
           //#endregion
-
           //#region Is help trigger?
           const escapedTriggerHelp = escapeRegExp(this.config.triggers.help);
           const regexHelp = new RegExp(
@@ -83,7 +82,6 @@ export class Stagiaire extends Bot {
             return;
           }
           //#endregion
-
           //#region Is list trigger?
           const escapedTriggerList = escapeRegExp(this.config.triggers.list);
           const regexLists = new RegExp(
@@ -103,7 +101,6 @@ export class Stagiaire extends Bot {
             return;
           }
           //#endregion
-
           //#region Is roll trigger?
           const triggersRolls = [
             this.config.triggers.plants.roll,
@@ -137,6 +134,7 @@ export class Stagiaire extends Bot {
           return;
         }
       });
+      // DEBUG:
       // this.displayTransactions(client);
       if (Cron.validate(this.config.summary.cron)) {
         Cron.schedule(
@@ -694,7 +692,13 @@ export class Stagiaire extends Bot {
   //#endregion
   //#region Utils
   private getStorageFile() {
-    const file = path.resolve(__dirname, "..", "storage.json");
+    const file = path.resolve(
+      __dirname,
+      "..",
+      "config",
+      configName,
+      "storage.json"
+    );
     const exists = fs.existsSync(file);
     return { path: file, exists };
   }
