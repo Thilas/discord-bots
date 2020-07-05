@@ -551,8 +551,20 @@ export class Stagiaire extends Bot {
       parseInt(groups.bonus, 10),
       groups.semester,
       parseInt(groups.gift, 10),
-      () => this.writeError(message, this.config.messages.errors.wrongGift),
-      () => this.writeError(message, this.config.messages.errors.wrongSemester)
+      () =>
+        this.writeError(
+          message,
+          formatString(this.config.messages.errors.wrongGift, {
+            triggerItem: this.config.triggers[item.kind].roll,
+          })
+        ),
+      () =>
+        this.writeError(
+          message,
+          formatString(this.config.messages.errors.wrongSemester, {
+            triggerItem: this.config.triggers[item.kind].roll,
+          })
+        )
     );
     if (!data.validated) return;
 
