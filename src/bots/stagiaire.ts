@@ -99,7 +99,7 @@ export class Stagiaire extends Bot {
           //#region Is list trigger?
           const escapedTriggerList = escapeRegExp(this.config.triggers.list);
           const regexLists = new RegExp(
-            `\\b(?<trigger>${escapedTriggerList})\\b(?: *(?<difficulty>\\d+)\\b)?(?: *(?<category>[^() ]+)\\b)?(?: *\\( *(?<ingredient>.+?)? *\\))?`
+            `\\b(?<trigger>${escapedTriggerList})\\b(?: *(?<difficulty>\\d+)\\b)?(?: *(?<category>[^() ]+))?(?: *\\( *(?<ingredient>.+?)? *\\))?`
           );
           const matchLists = message.content.match(regexLists);
           if (matchLists && matchLists.groups) {
