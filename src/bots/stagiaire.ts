@@ -575,7 +575,7 @@ export class Stagiaire extends Bot {
     }
 
     // Send Roll Request
-    const request = roll(100);
+    const request = roll(this.config.maxRoll ?? 100);
     const { perso, transaction } = this.computeRoll(
       message,
       request,
