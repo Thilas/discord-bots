@@ -38,6 +38,7 @@ export class Stagiaire extends Bot {
       chanMJ='${config.triggers.potions.chanMJ}',
       MJ='${config.triggers.potions.MJ.join(", ")}'`);
     this.log(`Categories: ${config.categories.join(", ")}`);
+    this.log(`Max Roll: ${config.maxRoll ?? "<default>"}`);
     this.log(`Summary: cron='${config.summary.cron}'`);
     this.config = config;
     if (!this.setDisplayTransactionsCron(true))
