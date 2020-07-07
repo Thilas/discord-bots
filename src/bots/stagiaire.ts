@@ -7,7 +7,6 @@ import { configName, loadAndWatch } from "../config";
 import stagiaireConfig from "../config/stagiaire.json";
 import {
   Args,
-  escapeRegExp,
   formatString,
   getRandom,
   Groups,
@@ -78,12 +77,13 @@ export class Stagiaire extends Bot {
           }
           //#endregion
           //#region Is help trigger?
-          const escapedTriggerHelp = escapeRegExp(this.config.triggers.help);
-          const regexHelp = new RegExp(
-            `\\b(?<trigger>${escapedTriggerHelp})\\b(?: *(?<command>.*[^ ]))?`
+          const matchHelp = message.content.match(
+            /(?<trigger>[A-zÀ-ú-]+)(?: *(?<command>[A-zÀ-ú-]+))?/
           );
-          const matchHelp = message.content.match(regexHelp);
-          if (matchHelp && matchHelp.groups) {
+          if (
+            matchHelp?.groups &&
+            localeEquals(matchHelp.groups.trigger, this.config.triggers.help)
+          ) {
             if (
               await channel.isValidTrigger(
                 message,
@@ -97,12 +97,13 @@ export class Stagiaire extends Bot {
           }
           //#endregion
           //#region Is list trigger?
-          const escapedTriggerList = escapeRegExp(this.config.triggers.list);
-          const regexLists = new RegExp(
-            `\\b(?<trigger>${escapedTriggerList})\\b(?: *(?<difficulty>\\d+)\\b)?(?: *(?<category>[^() ]+))?(?: *\\( *(?<ingredient>.+?)? *\\))?`
+          const matchLists = message.content.match(
+            /(?<trigger>[A-zÀ-ú-]+)(?: *(?<difficulty>\d+)\b)?(?: *(?<category>[^() ]+))?(?: *\( *(?<ingredient>.+?)? *\))?/
           );
-          const matchLists = message.content.match(regexLists);
-          if (matchLists && matchLists.groups) {
+          if (
+            matchLists?.groups &&
+            localeEquals(matchLists.groups.trigger, this.config.triggers.list)
+          ) {
             if (
               await channel.isValidTrigger(
                 message,
@@ -116,22 +117,24 @@ export class Stagiaire extends Bot {
           }
           //#endregion
           //#region Is roll trigger?
-          const triggersRolls = [
-            this.config.triggers.plants.roll,
-            this.config.triggers.potions.roll,
-          ];
-          const escapedTriggersRolls = triggersRolls
-            .map((id) => escapeRegExp(id))
-            .join("|");
-          const regexRoll = new RegExp(
-            `\\b(?<trigger>${escapedTriggersRolls}) +(?<item>.+?) *\\( *(?<perso>.+?) +(?:(?<bonus>-?\\d+)|(?<semester>\\d+|x) +(?<gift>\\d+)) *\\)`
+          const matchRoll = message.content.match(
+            /(?<trigger>[A-zÀ-ú-]+) +(?<item>.+?) *\( *(?<perso>.+?) +(?:(?<bonus>-?\d+)|(?<semester>\d+|x) +(?<gift>\d+)) *\)/
           );
-          const matchRoll = message.content.match(regexRoll);
-          if (matchRoll && matchRoll.groups) {
+          if (
+            matchRoll?.groups &&
+            (localeEquals(
+              matchRoll.groups.trigger,
+              this.config.triggers.plants.roll
+            ) ||
+              localeEquals(
+                matchRoll.groups.trigger,
+                this.config.triggers.potions.roll
+              ))
+          ) {
             if (
               await channel.isValidTrigger(
                 message,
-                matchRoll.groups.trigger,
+                this.config.triggers[channel.kind].roll,
                 matchRoll.groups
               )
             ) {
@@ -156,33 +159,32 @@ export class Stagiaire extends Bot {
   }
 
   private async writeHelp(message: Message, channel: Channel, command: string) {
-    switch (command) {
-      case undefined:
-        return this.sendMessage(
-          message,
-          formatString(this.config.messages.help[channel.kind].general, {
-            plantChannel: this.getDiscordChannel(message, "plants"),
-            potionChannel: this.getDiscordChannel(message, "potions"),
-          }),
-          false,
-          true
-        );
-      case this.config.triggers.list:
-        return this.sendMessage(
-          message,
-          formatString(this.config.messages.help[channel.kind].commands.list, {
-            plantChannel: this.getDiscordChannel(message, "plants"),
-          }),
-          false,
-          true
-        );
-      case this.config.triggers[channel.kind].roll:
-        return this.sendMessage(
-          message,
-          this.config.messages.help[channel.kind].commands.roll,
-          false,
-          true
-        );
+    if (!command) {
+      return this.sendMessage(
+        message,
+        formatString(this.config.messages.help[channel.kind].general, {
+          plantChannel: this.getDiscordChannel(message, "plants"),
+          potionChannel: this.getDiscordChannel(message, "potions"),
+        }),
+        false,
+        true
+      );
+    } else if (localeEquals(command, this.config.triggers.list)) {
+      return this.sendMessage(
+        message,
+        formatString(this.config.messages.help[channel.kind].commands.list, {
+          plantChannel: this.getDiscordChannel(message, "plants"),
+        }),
+        false,
+        true
+      );
+    } else if (localeEquals(command, this.config.triggers[channel.kind].roll)) {
+      return this.sendMessage(
+        message,
+        this.config.messages.help[channel.kind].commands.roll,
+        false,
+        true
+      );
     }
   }
 
@@ -443,25 +445,22 @@ export class Stagiaire extends Bot {
     }
     switch (trigger) {
       case this.config.triggers.help:
-        switch (groups.command) {
-          case undefined:
-          case this.config.triggers.list:
-          case this.config.triggers[channel.kind].roll:
-            return true;
-          case this.config.triggers.plants.roll:
-            await this.writeErrorWrongChannelCommand(
-              message,
-              channel,
-              "plants"
-            );
-            return false;
-          case this.config.triggers.potions.roll:
-            await this.writeErrorWrongChannelCommand(
-              message,
-              channel,
-              "potions"
-            );
-            return false;
+        if (
+          !groups.command ||
+          localeEquals(groups.command, this.config.triggers.list) ||
+          localeEquals(groups.command, this.config.triggers[channel.kind].roll)
+        ) {
+          return true;
+        } else if (
+          localeEquals(groups.command, this.config.triggers.plants.roll)
+        ) {
+          await this.writeErrorWrongChannelCommand(message, channel, "plants");
+          return false;
+        } else if (
+          localeEquals(groups.command, this.config.triggers.potions.roll)
+        ) {
+          await this.writeErrorWrongChannelCommand(message, channel, "potions");
+          return false;
         }
         break;
       case this.config.triggers.list:

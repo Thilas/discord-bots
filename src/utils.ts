@@ -35,10 +35,6 @@ export function getRandom<T>(items: T[]) {
   return items[roll(items.length) - 1];
 }
 
-export function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 export function notEmpty<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined;
 }
