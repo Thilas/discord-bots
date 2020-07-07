@@ -240,15 +240,19 @@ export class Stagiaire extends Bot {
   private updateTransaction(
     playerId: string,
     persoId: string,
-    transaction: Transaction
+    id: string,
+    transaction: Partial<Transaction>
   ) {
     const storage = this.getStorage();
-    if (!storage) return;
-    const perso = storage.players?.[playerId]?.[persoId];
-    if (!perso) return;
-    const index = perso.transactions.findIndex((t) => t.id === transaction.id);
+    if (!storage?.players?.[playerId]?.[persoId]) return;
+    const index = storage.players[playerId][persoId].transactions.findIndex(
+      (t) => t.id === id
+    );
     if (index < 0) return;
-    perso.transactions[index] = transaction;
+    storage.players[playerId][persoId].transactions[index] = {
+      ...storage.players[playerId][persoId].transactions[index],
+      ...transaction,
+    };
     this.setStorage(storage);
   }
 
@@ -280,8 +284,9 @@ export class Stagiaire extends Bot {
       const playerDiscord = channel.client.users.cache.get(player);
       const ping = playerDiscord ? `${playerDiscord}, ` : "";
       await channel.send(`${ping}${content.join("\n")}`);
-      transaction.received = true;
-      this.updateTransaction(player, perso, transaction);
+      this.updateTransaction(player, perso, transaction.id, {
+        received: true,
+      });
     }, Math.max(next, 1));
   }
   //#endregion
