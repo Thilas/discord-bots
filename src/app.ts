@@ -3,6 +3,10 @@ import { Stagiaire } from "./bots/stagiaire";
 import { app } from "./config";
 import { allSettled } from "./promise";
 
+console.log("Starting bots...");
+console.log(`UTC Time:   ${new Date().toUTCString()}`);
+console.log(`Local Time: ${new Date().toLocaleString()}`);
+
 const bots = [
   new Saroumane(app.tokens.saroumane),
   new Stagiaire(app.tokens.stagiaire),

@@ -296,10 +296,8 @@ export class Stagiaire extends Bot {
     if (!Cron.validate(this.config.summary.cron)) return false;
     this.summaryCron?.destroy();
     if (!reload || this.summaryCron) {
-      this.summaryCron = Cron.schedule(
-        this.config.summary.cron,
-        () => this.displayTransactions(this.client),
-        { timezone: timeZone }
+      this.summaryCron = Cron.schedule(this.config.summary.cron, () =>
+        this.displayTransactions(this.client)
       );
     }
     return true;
