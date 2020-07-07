@@ -305,16 +305,17 @@ export class Stagiaire extends Bot {
   }
 
   private async displayTransactions(client: Client) {
+    this.log("Display Transactions Launched");
     const storage = this.getStorage();
     if (!storage) return;
 
     const plantChannel = this.getDiscordChannel(client, "plants", "chanMJ");
     const potionChannel = this.getDiscordChannel(client, "potions", "chanMJ");
     const mjPlant = this.config.triggers.plants.MJ.map((id) =>
-      client.users.cache.get(id)
+      client.guilds.cache.get(this.config.tagBotGuild)?.roles.cache.get(id)
     ).filter(notEmpty);
     const mjPotion = this.config.triggers.potions.MJ.map((id) =>
-      client.users.cache.get(id)
+      client.guilds.cache.get(this.config.tagBotGuild)?.roles.cache.get(id)
     ).filter(notEmpty);
 
     let pingMjPlant = false;
