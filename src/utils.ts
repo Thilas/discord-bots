@@ -74,3 +74,14 @@ export function omit<T, K extends keyof T>(o: T, p: K): Omit<T, K> {
     });
   return result;
 }
+
+export function ellipsis(value: string, maxSize: number, message: string) {
+  if (maxSize <= message.length + 3) {
+    throw "maxSize is too small for the provided message";
+  }
+  const overflow = value.length - maxSize;
+  if (overflow > 0) {
+    value = `${value.substring(0, maxSize - message.length - 3)} > ${message}`;
+  }
+  return value;
+}

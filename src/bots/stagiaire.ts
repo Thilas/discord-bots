@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import { configName, loadAndWatch } from "../config";
 import {
   Args,
+  ellipsis,
   formatString,
   getRandom,
   Groups,
@@ -383,7 +384,11 @@ export class Stagiaire extends Bot {
       {
         user,
         perso,
-        transactions: transactions.join("\n"),
+        transactions: ellipsis(
+          transactions.join("\n"),
+          1800,
+          "la suite a été tronquée"
+        ),
       }
     );
     await channel.send(content);
