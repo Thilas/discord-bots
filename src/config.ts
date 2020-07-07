@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import appConfig from "./config/app.json";
+import appConfig from "./app.json";
 
 export const configName = process.env.NODE_ENV || "development";
 
@@ -8,12 +8,10 @@ export const configName = process.env.NODE_ENV || "development";
 export const app = load("app.json", appConfig);
 
 function getConfigMetadata(filename: string) {
-  let file = path.resolve(__dirname, "config", configName, filename);
+  const name = path.join("config", configName, filename);
+  const file = path.resolve(__dirname, name);
   const overridden = fs.existsSync(file);
-  if (!overridden) {
-    file = path.resolve(__dirname, "config", filename);
-  }
-  return { overridden, file };
+  return { overridden, file, name };
 }
 
 /**
@@ -43,14 +41,16 @@ export function loadAndWatch<T>(
   apply: (config: T) => void
 ) {
   const configMetadata = getConfigMetadata(filename);
+  let timeout: NodeJS.Timeout | undefined;
   fs.watch(configMetadata.file, (event) => {
-    if (event === "change") {
+    if (event === "change" && !timeout) {
+      timeout = setTimeout(() => (timeout = undefined), 1000); // give 1 second for multiple events
       fs.readFile(configMetadata.file, (err, data) => {
         if (err) {
           console.error(`Error while reading ${filename}: ${err}`);
         }
         if (data.length) {
-          console.log(`Refreshing ${filename}...`);
+          console.log(`** Refreshing ${filename}...`);
           try {
             config = JSON.parse(data.toString());
             try {
@@ -75,9 +75,9 @@ function loadConfig<T>(
   config: T,
   configMetadata = getConfigMetadata(filename)
 ) {
-  console.log(`Loading ${filename} from ${configMetadata.file}...`);
+  console.log(`** Loading ${filename} from ${configMetadata.file}...`);
   if (!configMetadata.overridden) {
-    return config;
+    throw `Missing configuration file: ${configMetadata.name}`;
   }
   const data = fs.readFileSync(configMetadata.file);
   config = JSON.parse(data.toString());

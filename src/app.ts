@@ -9,10 +9,10 @@ const bots = [
 ];
 
 process.on("SIGINT", () => {
-  console.log("Closing...");
+  console.log("** Closing...");
   allSettled(bots.map((bot) => bot.dispose())).then(() => process.exit());
 });
 
 allSettled(bots.map((bot) => bot.start())).then(() =>
-  console.log("Initialized")
+  console.log("** Initialized")
 );

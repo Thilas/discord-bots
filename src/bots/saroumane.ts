@@ -1,7 +1,7 @@
 import { loadAndWatch } from "../config";
-import saroumaneConfig from "../config/saroumane.json";
 import { getRandom, roll } from "../utils";
 import { Bot } from "./bot";
+import saroumaneConfig from "./saroumane.json";
 
 export class Saroumane extends Bot {
   private config = loadAndWatch("saroumane.json", saroumaneConfig, (config) => {

@@ -4,7 +4,6 @@ import Cron from "node-cron";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { configName, loadAndWatch } from "../config";
-import stagiaireConfig from "../config/stagiaire.json";
 import {
   Args,
   formatString,
@@ -18,6 +17,7 @@ import {
   timeZone,
 } from "../utils";
 import { Bot } from "./bot";
+import stagiaireConfig from "./stagiaire.json";
 
 type Config = Stagiaire["config"];
 
@@ -305,92 +305,98 @@ export class Stagiaire extends Bot {
   }
 
   private async displayTransactions(client: Client) {
-    this.log("Display Transactions Launched");
+    this.log(`Display Transactions Launched at ${new Date().toUTCString()}`);
     const storage = this.getStorage();
-    if (!storage) return;
+    if (!storage) {
+      this.log("Storage is empty");
+      return;
+    }
 
     const plantChannel = this.getDiscordChannel(client, "plants", "chanMJ");
     const potionChannel = this.getDiscordChannel(client, "potions", "chanMJ");
-    const mjPlant = this.config.triggers.plants.MJ.map((id) =>
-      client.guilds.cache.get(this.config.tagBotGuild)?.roles.cache.get(id)
-    ).filter(notEmpty);
-    const mjPotion = this.config.triggers.potions.MJ.map((id) =>
-      client.guilds.cache.get(this.config.tagBotGuild)?.roles.cache.get(id)
-    ).filter(notEmpty);
 
-    let pingMjPlant = false;
-    let pingMJpotion = false;
-    for (const playerId of Object.keys(storage.players)) {
-      const playerContent = storage.players[playerId];
+    let pingMJPlant = false;
+    let pingMJPotion = false;
+    for (const [playerId, playerContent] of Object.entries(storage.players)) {
       const playerDiscord = client.users.cache.get(playerId);
       if (!playerDiscord) continue;
 
-      for (const persoId of Object.keys(playerContent)) {
-        const persoContent = playerContent[persoId];
-
-        let contentPlant = persoContent.transactions
-          .filter(
-            (t) =>
-              t.kind === "plants" &&
-              t.toBeStored &&
-              !t.storedInInventory &&
-              t.received
-          )
-          .map((t) => {
-            t.storedInInventory = true;
-            return `${t.name} : +${t.quantity} (${this.formatTime(
-              t.receiptDate
-            )})`;
-          });
-
-        if (contentPlant.length) {
-          contentPlant = [
-            `${playerDiscord}\n\`\`\`md\n# ${persoId}`,
-            ...contentPlant,
-            "```\n\n",
-          ];
-          await plantChannel.send(contentPlant.join("\n"));
-          pingMjPlant = true;
-        }
-
+      for (const [persoId, persoContent] of Object.entries(playerContent)) {
+        let contentPlant: string[] = [];
         let contentPotion: string[] = [];
         persoContent.transactions
-          .filter(
-            (t) =>
-              t.kind === "potions" &&
-              t.toBeStored &&
-              !t.storedInInventory &&
-              t.received
-          )
+          .filter((t) => t.received && t.toBeStored && !t.storedInInventory)
           .forEach((t) => {
+            const message = `${t.name} : +${t.quantity} (${this.formatTime(
+              t.receiptDate
+            )})`;
+            switch (t.kind) {
+              case "plants":
+                contentPlant.push(message);
+                break;
+              case "potions":
+                contentPotion.push(message);
+                const item = this.getPotion(t.name);
+                item?.plants?.forEach((p) =>
+                  contentPotion.push(`    ${p.name} : -1`)
+                );
+                break;
+              default:
+                return;
+            }
             t.storedInInventory = true;
-            contentPotion.push(
-              `${t.name} : +${t.quantity} (${this.formatTime(t.receiptDate)})`
-            );
-            const item = this.getPotion(t.name);
-            item?.plants?.forEach((p) =>
-              contentPotion.push(`    ${p.name} : -1`)
-            );
           });
 
-        if (contentPotion.length) {
-          contentPotion = [
-            `${playerDiscord}\n\`\`\`md\n# ${persoId}`,
-            ...contentPotion,
-            "```\n\n",
-          ];
-          await potionChannel.send(contentPotion.join("\n"));
-          pingMJpotion = true;
-        }
+        pingMJPlant = await this.sendTransactionsSummary(
+          plantChannel,
+          playerDiscord,
+          persoId,
+          contentPlant,
+          pingMJPlant
+        );
+        pingMJPotion = await this.sendTransactionsSummary(
+          potionChannel,
+          playerDiscord,
+          persoId,
+          contentPotion,
+          pingMJPotion
+        );
       }
     }
-    if (pingMjPlant) {
-      plantChannel.send(`\n\n${mjPlant.join(", ")}`);
-    }
-    if (pingMJpotion) {
-      potionChannel.send(`\n\n${mjPotion.join(", ")}`);
-    }
     this.setStorage(storage);
+    await this.pingMJ("plants", plantChannel, pingMJPlant);
+    await this.pingMJ("potions", potionChannel, pingMJPotion);
+    this.log("Display Transactions Ended");
+  }
+
+  private async sendTransactionsSummary(
+    channel: TextChannel,
+    user: User,
+    perso: string,
+    transactions: string[],
+    ping: boolean
+  ) {
+    if (!transactions.length) return ping;
+
+    const content = formatString(
+      "{user}\n```md\n# {perso}\n{transactions}```\n\n",
+      {
+        user,
+        perso,
+        transactions: transactions.join("\n"),
+      }
+    );
+    await channel.send(content);
+    return true;
+  }
+
+  private async pingMJ(kind: Items, channel: TextChannel, ping: boolean) {
+    if (!ping) return;
+    const mjRoles = this.config.triggers[kind].MJ.map((id) =>
+      channel.guild.roles.cache.get(id)
+    ).filter(notEmpty);
+    if (!mjRoles.length) this.log(`No MJ roles found for ${kind}`);
+    await channel.send(`\n\n${mjRoles.join(", ")}`);
   }
 
   private resetMissingTransactionsTimers(client: Client) {
