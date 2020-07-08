@@ -317,9 +317,7 @@ export class Stagiaire extends Bot {
     let pingMJPlant = false;
     let pingMJPotion = false;
     for (const [playerId, playerContent] of Object.entries(storage.players)) {
-      const playerDiscord = client.users.cache.get(playerId);
-      if (!playerDiscord) continue;
-
+      const playerDiscord = client.users.cache.get(playerId) ?? playerId;
       for (const [persoId, persoContent] of Object.entries(playerContent)) {
         let contentPlant: string[] = [];
         let contentPotion: string[] = [];
@@ -370,7 +368,7 @@ export class Stagiaire extends Bot {
 
   private async sendTransactionsSummary(
     channel: TextChannel,
-    user: User,
+    player: User | string,
     perso: string,
     transactions: string[],
     ping: boolean
@@ -378,9 +376,9 @@ export class Stagiaire extends Bot {
     if (!transactions.length) return ping;
 
     const content = formatString(
-      "{user}\n```md\n# {perso}\n{transactions}```\n\n",
+      "{player}\n```md\n# {perso}\n{transactions}```\n\n",
       {
-        user,
+        player,
         perso,
         transactions: ellipsis(
           transactions.join("\n"),
@@ -398,8 +396,8 @@ export class Stagiaire extends Bot {
     const mjRoles = this.config.triggers[kind].MJ.map((id) =>
       channel.guild.roles.cache.get(id)
     ).filter(notEmpty);
-    if (!mjRoles.length) this.log(`No MJ roles found for ${kind}`);
-    await channel.send(`\n\n${mjRoles.join(", ")}`);
+    if (mjRoles.length) await channel.send(`\n\n${mjRoles.join(", ")}`);
+    else this.log(`No MJ roles found for ${kind}`);
   }
 
   private resetMissingTransactionsTimers(client: Client) {
