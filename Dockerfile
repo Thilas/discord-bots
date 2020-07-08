@@ -1,4 +1,5 @@
 FROM node:alpine AS base
+RUN ["apk", "add", "tzdata"]
 WORKDIR /home/node/app
 COPY package.json yarn.lock ./
 RUN ["yarn", "install", "--pure-lockfile", "--production"]

@@ -2,7 +2,9 @@ import { Saroumane } from "./bots/saroumane";
 import { Stagiaire } from "./bots/stagiaire";
 import { app } from "./config";
 import { allSettled } from "./promise";
+// import { timeZone } from "./utils";
 
+// process.env.TZ = timeZone;
 console.log("Starting bots...");
 console.log(`UTC Time:   ${new Date().toUTCString()}`);
 console.log(`Local Time: ${new Date().toLocaleString()}`);
