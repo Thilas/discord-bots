@@ -35,12 +35,17 @@ export abstract class Bot {
   }
 
   /** Prints to `stdout` with newline for the bot. */
-  protected log(message: string) {
+  public log(message: string) {
     console.log(`[${this.name}] ${message}`);
   }
 
   /** Prints to `stderr` with newline for the bot. */
-  protected error(message: string) {
+  public error(message: string) {
     console.error(`[${this.name}] ${message}`);
+  }
+
+  /** Prints warning to `stdout` with newline for the bot. */
+  public warn(message: string) {
+    console.warn(`[${this.name}] ${message}`);
   }
 }

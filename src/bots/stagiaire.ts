@@ -28,15 +28,15 @@ export class Stagiaire extends Bot {
       `Bot: id='${config.tagBotId}', roles='${config.tagBotRoles.join(", ")}'`
     );
     this.log(`Plants: #=${config.plants.length},
-      trigger='${config.triggers.plants.roll}',
-      chanPlayers='${config.triggers.plants.chanPlayers}',
-      chanMJ='${config.triggers.plants.chanMJ}',
-      MJ='${config.triggers.plants.MJ.join(", ")}'`);
+  trigger='${config.triggers.plants.roll}',
+  chanPlayers='${config.triggers.plants.chanPlayers}',
+  chanMJ='${config.triggers.plants.chanMJ}',
+  MJ='${config.triggers.plants.MJ.join(", ")}'`);
     this.log(`Potions: #=${config.potions.length},
-      trigger='${config.triggers.potions.roll}',
-      chanPlayers='${config.triggers.potions.chanPlayers}',
-      chanMJ='${config.triggers.potions.chanMJ}',
-      MJ='${config.triggers.potions.MJ.join(", ")}'`);
+  trigger='${config.triggers.potions.roll}',
+  chanPlayers='${config.triggers.potions.chanPlayers}',
+  chanMJ='${config.triggers.potions.chanMJ}',
+  MJ='${config.triggers.potions.MJ.join(", ")}'`);
     this.log(`Categories: ${config.categories.join(", ")}`);
     this.log(`Max Roll: ${config.maxRoll ?? "<default>"}`);
     this.log(`Summary: cron='${config.summary.cron}'`);
@@ -154,12 +154,19 @@ export class Stagiaire extends Bot {
       });
       this.setDisplayTransactionsCron();
       // DEBUG:
-      // this.displayTransactions(client);
+      // setTimeout(async () => {
+      //   await this.displayTransactions(client);
+      // }, 1);
       this.resetMissingTransactionsTimers(client);
     });
   }
 
   private async writeHelp(message: Message, channel: Channel, command: string) {
+    this.log(
+      `Helping ${message.author.id} for ${channel.kind} about command "${
+        command ?? "<none>"
+      }"`
+    );
     if (!command) {
       return this.sendMessage(
         message,
@@ -219,9 +226,13 @@ export class Stagiaire extends Bot {
     if (!player) {
       player = storage.players[message.author.id] = {} as Player;
     }
-    let perso = player[data.perso];
+    // looking for the persoId that "localEquals" the specified perso (to avoid duplicated entries)
+    let persoId =
+      Object.keys(player).find((key) => localeEquals(key, data.perso)) ??
+      data.perso;
+    let perso = player[persoId];
     if (!perso) {
-      perso = player[data.perso] = {
+      perso = player[persoId] = {
         transactions: [],
       } as Character;
     }
@@ -232,6 +243,7 @@ export class Stagiaire extends Bot {
       transaction,
       item,
       message.author.id,
+      persoId,
       data.perso
     );
     return { player: message.author.id, perso: data.perso, transaction };
@@ -261,8 +273,9 @@ export class Stagiaire extends Bot {
     object: Client | Message,
     transaction: Transaction,
     item: Item,
-    player: string,
-    perso: string
+    playerId: string,
+    persoId: string,
+    perso?: string
   ) {
     const channel =
       "channel" in object
@@ -271,8 +284,15 @@ export class Stagiaire extends Bot {
 
     const next = new Date(transaction.receiptDate).getTime() - Date.now();
     setTimeout(async () => {
+      this.log(`Receiving ${item.name} among ${item.kind} by ${playerId} > ${
+        perso ?? persoId
+      }:
+  transaction=${transaction.id}
+  roll=${transaction.roll}
+  bonus=${transaction.bonus}
+  quantity=${transaction.quantity}`);
       const content = [
-        this.getRollResult(transaction, item, perso),
+        this.getRollResult(transaction, item, perso ?? persoId),
         formatString(this.config.messages.results.logs[item.kind], {
           roll: transaction.roll,
           bonus: transaction.bonus,
@@ -282,10 +302,10 @@ export class Stagiaire extends Bot {
               : undefined,
         }),
       ];
-      const playerDiscord = channel.client.users.cache.get(player);
+      const playerDiscord = channel.client.users.cache.get(playerId);
       const ping = playerDiscord ? `${playerDiscord}, ` : "";
       await channel.send(`${ping}${content.join("\n")}`);
-      this.updateTransaction(player, perso, transaction.id, {
+      this.updateTransaction(playerId, persoId, transaction.id, {
         received: true,
       });
     }, Math.max(next, 1));
@@ -304,7 +324,7 @@ export class Stagiaire extends Bot {
   }
 
   private async displayTransactions(client: Client) {
-    this.log(`Display Transactions Launched at ${new Date().toUTCString()}`);
+    this.log(`Display Transactions started at ${new Date().toUTCString()}`);
     const storage = this.getStorage();
     if (!storage) {
       this.log("Storage is empty");
@@ -339,8 +359,10 @@ export class Stagiaire extends Bot {
                 );
                 break;
               default:
+                this.warn("Unknown item.");
                 return;
             }
+            this.log(message);
             t.storedInInventory = true;
           });
 
@@ -363,7 +385,7 @@ export class Stagiaire extends Bot {
     this.setStorage(storage);
     await this.pingMJ("plants", plantChannel, pingMJPlant);
     await this.pingMJ("potions", potionChannel, pingMJPotion);
-    this.log("Display Transactions Ended");
+    this.log("Display Transactions ended");
   }
 
   private async sendTransactionsSummary(
@@ -401,23 +423,33 @@ export class Stagiaire extends Bot {
   }
 
   private resetMissingTransactionsTimers(client: Client) {
+    this.log(
+      `Reset Missing Transactions Timers started at ${new Date().toUTCString()}`
+    );
     const storage = this.getStorage();
-    if (!storage) return;
+    if (!storage) {
+      this.log("Storage is empty");
+      return;
+    }
 
-    for (const playerId of Object.keys(storage.players)) {
-      const playerContent = storage.players[playerId];
-      for (const persoId of Object.keys(playerContent)) {
-        const persoContent = playerContent[persoId];
+    for (const [playerId, playerContent] of Object.entries(storage.players)) {
+      for (const [persoId, persoContent] of Object.entries(playerContent)) {
         persoContent.transactions
           .filter((t) => !t.received)
           .forEach((t) => {
             const item = this.getItem(t);
             if (item) {
+              this.log(
+                `Setting timer for transaction ${t.id} on ${this.formatTime(
+                  t.receiptDate
+                )}`
+              );
               this.setRequestTimer(client, t, item, playerId, persoId);
             }
           });
       }
     }
+    this.log("Reset Missing Transactions Timers ended");
   }
   //#endregion
   //#region Item Channels
@@ -596,6 +628,17 @@ export class Stagiaire extends Bot {
       item,
       data
     );
+    this.log(
+      `Rolling ${item.name} among ${item.kind} by ${message.author.id} > ${
+        data.perso
+      }:
+  bonus=${data.bonus}
+  semester=${data.semester}
+  gift=${data.gift}
+  transaction=${transaction.id}
+  request date=${this.formatTime(transaction.requestDate)}
+  receipt date=${this.formatTime(transaction.receiptDate)}`
+    );
     const content = formatString(this.config.messages.confirmation[item.kind], {
       time: this.formatTime(transaction.receiptDate),
       perso: perso,
@@ -711,7 +754,7 @@ export class Stagiaire extends Bot {
   //#endregion
   //#region Error Messages
   private async writeError(message: Message, errorMessage: string) {
-    this.log(
+    this.error(
       `Reply "${errorMessage}" to "${message.content}" from ${message.author.tag}`
     );
     return this.sendMessage(message, errorMessage, true, true);
@@ -821,6 +864,9 @@ class PlantChannel {
 
   async writeList(message: Message, groups: Groups, config: Config) {
     const difficulty = this.stagiaire.getDifficulty(groups);
+    this.stagiaire.log(
+      `Listing plants by ${message.author.id}: difficulty=${groups.difficulty}, category=${groups.category}`
+    );
     const items = config.plants.filter((item) => {
       if (difficulty && item.level !== difficulty) return false;
       return (
@@ -876,6 +922,9 @@ class PotionChannel {
       ? this.stagiaire.getPlant(groups.ingredient)
       : undefined;
     const ingredient = plant ? plant.name : groups.ingredient;
+    this.stagiaire.log(
+      `Listing potions by ${message.author.id}: difficulty=${groups.difficulty}, ingredient=${groups.ingredient}, category=${groups.category}`
+    );
     const items = config.potions.filter((item) => {
       if (difficulty && item.level !== difficulty) return false;
       if (ingredient) {
