@@ -1,6 +1,6 @@
 import { formatString, Groups, localeEquals } from "../../utils";
-import { Context } from "./context";
 import { Items, Kinds, Plants, Potions } from "./items";
+import { MessageContext } from "./messageContext";
 import { Character, Transaction } from "./storage";
 
 export type Channel = PlantChannel | PotionChannel;
@@ -8,7 +8,7 @@ export type ChannelType = "chanPlayers" | "chanMJ";
 
 export class PlantChannel {
   readonly kind: Plants = "plants";
-  constructor(readonly context: Context) {}
+  constructor(readonly context: MessageContext) {}
 
   isValidTrigger(trigger: string, groups: Groups) {
     return isValidTrigger(this.context, trigger, groups, () => {
@@ -51,7 +51,7 @@ Usages :
 
 export class PotionChannel {
   readonly kind: Potions = "potions";
-  constructor(readonly context: Context) {}
+  constructor(readonly context: MessageContext) {}
 
   isValidTrigger(trigger: string, groups: Groups) {
     return isValidTrigger(this.context, trigger, groups);
@@ -104,7 +104,7 @@ Ingrédients : ${item.plants.join(", ") || "aucun"}
 }
 
 async function isValidTrigger(
-  context: Context,
+  context: MessageContext,
   trigger: string,
   groups: Groups,
   getWrongChannels?: () => Items | Items[] | undefined
@@ -145,7 +145,7 @@ async function isValidTrigger(
   return false;
 }
 
-function writeErrorWrongChannelCommand(context: Context, ...kinds: Items[]) {
+function writeErrorWrongChannelCommand(context: MessageContext, ...kinds: Items[]) {
   return context.writeError(
     formatString(context.config.messages.errors.wrongChannelCommand[context.channel.kind], {
       channels: kinds.map((kind) => context.stagiaire.getDiscordChannel(kind)).join(", "),

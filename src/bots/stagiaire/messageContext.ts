@@ -7,8 +7,8 @@ import { HelpMiddleware } from "./middlewares/help";
 import { ListMiddleware } from "./middlewares/list";
 import { RollMiddleware } from "./middlewares/roll";
 
-export class Context {
-  static readonly middlewares = new MiddlewareManager<Context>()
+export class MessageContext {
+  static readonly middlewares = new MiddlewareManager<MessageContext>()
     .use(HelpMiddleware)
     .use(ListMiddleware)
     .use(RollMiddleware);
@@ -60,8 +60,7 @@ export class Context {
         })
       );
     }
-
-    return Context.middlewares.invoke(this, () => this.writeError(this.config.messages.errors.wrongSyntax));
+    return MessageContext.middlewares.invoke(this, () => this.writeError(this.config.messages.errors.wrongSyntax));
   }
 
   sendBasic(content: string) {

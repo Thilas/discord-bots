@@ -1,17 +1,28 @@
 import { v4 as uuidv4 } from "uuid";
-import { Middleware } from "../../../middleware";
+import { IMiddleware, Middleware } from "../../../middleware";
 import { formatString, formatTime, Groups, localeEquals, roll } from "../../../utils";
-import { Context } from "../context";
 import { InputData } from "../inputData";
 import { getReceiptDate, Item, Kinds } from "../items";
-import { Character, getStorage, Player, setStorage, Storage, Transaction } from "../storage";
+import { MessageContext } from "../messageContext";
+import { Character, getPersoId, getStorage, Player, setStorage, Storage, Transaction } from "../storage";
 
-export class RollMiddleware extends Middleware<Context> {
-  constructor(next: Middleware<Context>) {
+export class RollMiddleware extends Middleware<MessageContext> {
+  constructor(next: IMiddleware<MessageContext>) {
     super(next);
   }
 
-  async invoke(context: Context) {
+  async invoke(context: MessageContext) {
+    const groups = await RollMiddleware.parse(context);
+    if (groups !== null) {
+      if (groups) {
+        await this.processRoll(context, groups);
+      }
+      return;
+    }
+    await this.next.invoke(context);
+  }
+
+  static async parse(context: MessageContext) {
     const match = context.message.match(
       /(?<trigger>[A-zÀ-ú-]+) +(?<item>.+?) *\( *(?<perso>.+?) +(?:(?<bonus>-?\d+)|(?<semester>\d+|x) +(?<gift>\d+)) *\)/
     );
@@ -20,15 +31,15 @@ export class RollMiddleware extends Middleware<Context> {
       const kind = Kinds.find((k) => localeEquals(trigger, context.config.triggers[k].roll));
       if (kind) {
         if (await context.channel.isValidTrigger(context.config.triggers[kind].roll, match.groups)) {
-          await this.processRoll(context, match.groups);
+          return match.groups;
         }
         return;
       }
     }
-    await this.next.invoke(context);
+    return null;
   }
 
-  private async processRoll(context: Context, groups: Groups) {
+  private async processRoll(context: MessageContext, groups: Groups) {
     const item = context.stagiaire.getItem(context.channel.kind, groups.item);
     if (!item) {
       await context.writeError(context.config.messages.errors.wrongItem[context.channel.kind]);
@@ -86,7 +97,7 @@ export class RollMiddleware extends Middleware<Context> {
     await context.sendMessage(content, false, true);
   }
 
-  private getBonus(context: Context, item: Item, data: InputData) {
+  private getBonus(context: MessageContext, item: Item, data: InputData) {
     const itemBonus = context.config.bonuses[item.kind].find(
       (id) => id.level === item.level && id.semester === data.semester
     );
@@ -95,7 +106,7 @@ export class RollMiddleware extends Middleware<Context> {
     return itemBonus.bonus + giftBonus;
   }
 
-  private computeRoll(context: Context, roll: number, bonus: number, item: Item, data: InputData) {
+  private computeRoll(context: MessageContext, roll: number, bonus: number, item: Item, data: InputData) {
     let quantity = 0;
     switch (roll) {
       case 1:
@@ -118,7 +129,14 @@ export class RollMiddleware extends Middleware<Context> {
     return this.addTransaction(context, roll, bonus, item, data, quantity);
   }
 
-  private addTransaction(context: Context, roll: number, bonus: number, item: Item, data: InputData, quantity: number) {
+  private addTransaction(
+    context: MessageContext,
+    roll: number,
+    bonus: number,
+    item: Item,
+    data: InputData,
+    quantity: number
+  ) {
     const transaction: Transaction = {
       id: uuidv4(),
       roll: roll,
@@ -140,7 +158,7 @@ export class RollMiddleware extends Middleware<Context> {
       player = storage.players[context.author.id] = {} as Player;
     }
     // looking for the persoId that "localEquals" the specified perso (to avoid duplicated entries)
-    let persoId = Object.keys(player).find((key) => localeEquals(key, data.perso)) ?? data.perso;
+    let persoId = getPersoId(player, data.perso);
     let perso = player[persoId];
     if (!perso) {
       perso = player[persoId] = {

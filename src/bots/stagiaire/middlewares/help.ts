@@ -1,14 +1,14 @@
-import { Middleware } from "../../../middleware";
+import { IMiddleware, Middleware } from "../../../middleware";
 import { formatString, localeEquals } from "../../../utils";
-import { Context } from "../context";
 import { Items } from "../items";
+import { MessageContext } from "../messageContext";
 
-export class HelpMiddleware extends Middleware<Context> {
-  constructor(next: Middleware<Context>) {
+export class HelpMiddleware extends Middleware<MessageContext> {
+  constructor(next: IMiddleware<MessageContext>) {
     super(next);
   }
 
-  async invoke(context: Context) {
+  async invoke(context: MessageContext) {
     const matchHelp = context.message.match(/(?<trigger>[A-zÀ-ú-]+)(?: *(?<command>[A-zÀ-ú-]+))?/);
     if (matchHelp?.groups && localeEquals(matchHelp.groups.trigger, context.config.triggers.help)) {
       if (await context.channel.isValidTrigger(context.config.triggers.help, matchHelp.groups)) {
@@ -19,7 +19,7 @@ export class HelpMiddleware extends Middleware<Context> {
     await this.next.invoke(context);
   }
 
-  private async writeHelp(context: Context, kind: Items, command: string) {
+  private async writeHelp(context: MessageContext, kind: Items, command: string) {
     context.stagiaire.log(`Helping ${context.author.tag} for ${kind} about command "${command ?? "<none>"}"`);
     if (!command) {
       await context.sendMessage(

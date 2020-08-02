@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { configName } from "../../config";
+import { localeEquals } from "../../utils";
 import { Items } from "./items";
 
 export interface Storage {
@@ -51,4 +52,8 @@ export function setStorage(storage: Storage) {
   const file = getStorageFile();
   const data = JSON.stringify(storage);
   fs.writeFileSync(file.path, data);
+}
+
+export function getPersoId(player: Player, perso: string) {
+  return Object.keys(player).find((key) => localeEquals(key, perso)) ?? perso;
 }

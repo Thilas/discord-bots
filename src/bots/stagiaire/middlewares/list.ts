@@ -1,13 +1,13 @@
-import { Middleware } from "../../../middleware";
+import { IMiddleware, Middleware } from "../../../middleware";
 import { localeEquals } from "../../../utils";
-import { Context } from "../context";
+import { MessageContext } from "../messageContext";
 
-export class ListMiddleware extends Middleware<Context> {
-  constructor(next: Middleware<Context>) {
+export class ListMiddleware extends Middleware<MessageContext> {
+  constructor(next: IMiddleware<MessageContext>) {
     super(next);
   }
 
-  async invoke(context: Context) {
+  async invoke(context: MessageContext) {
     const matchLists = context.message.match(
       /(?<trigger>[A-zÀ-ú-]+)(?: *(?<difficulty>\d+)\b)?(?: *(?<category>[^() ]+))?(?: *\( *(?<ingredient>.+?)? *\))?/
     );

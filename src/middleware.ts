@@ -18,7 +18,7 @@ export interface IMiddleware<T> {
 }
 
 export abstract class Middleware<T> implements IMiddleware<T> {
-  constructor(protected readonly next: Middleware<T>) {}
+  constructor(protected readonly next: IMiddleware<T>) {}
 
   abstract invoke(context: T): Promise<void>;
 }

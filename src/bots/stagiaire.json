@@ -104,6 +104,10 @@
     "confirmation": {
       "plants": "",
       "potions": ""
+    },
+    "itemCanceled": {
+      "plants": "plant canceled: perso={perso}, item={item}, receiptDate={receiptDate}",
+      "potions": "potion canceled: perso={perso}, item={item}, receiptDate={receiptDate}"
     }
   },
   "bonuses": {

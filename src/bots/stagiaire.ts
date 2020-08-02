@@ -1,12 +1,13 @@
-import { TextChannel } from "discord.js";
+import { TextChannel, User } from "discord.js";
 import Cron from "node-cron";
 import { loadAndWatch } from "../config";
 import { Args, formatString, formatTime, getRandom, localeEquals, notEmpty, omit } from "../utils";
 import { Bot } from "./bot";
 import stagiaireConfig from "./stagiaire.json";
 import { ChannelType } from "./stagiaire/channels";
-import { Context } from "./stagiaire/context";
 import { getReceiptDate, Item, Items, Plant, Potion } from "./stagiaire/items";
+import { MessageContext } from "./stagiaire/messageContext";
+import { ReactionContext } from "./stagiaire/reactionContext";
 import { getStorage, setStorage, Transaction } from "./stagiaire/storage";
 import { displayTransactions } from "./stagiaire/summary";
 
@@ -30,13 +31,28 @@ export class Stagiaire extends Bot {
     if (!this.setDisplayTransactionsCron(true)) this.error("Invalid summary cron");
   });
   private summaryCron: Cron.ScheduledTask;
+  private timers = {} as {
+    [id: string]: NodeJS.Timeout;
+  };
 
   constructor(token: string) {
     super(token, () => {
-      this.client.on("message", async (message) => {
-        const context = new Context(this, this.client, this.config, message);
-        if (context.isBotMentioned()) await context.process();
-      });
+      this.client
+        .on("message", async (message) => {
+          const context = new MessageContext(this, this.client, this.config, message);
+          // let's focus on messages sent to the bot
+          if (context.isBotMentioned()) await context.process();
+        })
+        .on("messageReactionAdd", async (reaction, user) => {
+          if (user instanceof User) {
+            const messageContext = new MessageContext(this, this.client, this.config, reaction.message);
+            const context = new ReactionContext(this, this.client, this.config, reaction, user, messageContext);
+            // let's focus on reactions not sent by the bot
+            if (!context.isBot(user)) await context.process();
+          } else {
+            this.warn(`Partial user "${user}" added reaction "${reaction.emoji.name}"`);
+          }
+        });
       this.resetTransactionsTimers();
       this.setDisplayTransactionsCron();
       // DEBUG:
@@ -123,7 +139,7 @@ export class Stagiaire extends Bot {
 
   setTransactionTimer(transaction: Transaction, item: Item, playerId: string, persoId: string, perso?: string) {
     const next = new Date(transaction.receiptDate).getTime() - Date.now();
-    setTimeout(async () => {
+    const timer = setTimeout(async () => {
       this.log(`Receiving ${item.name} among ${item.kind} by ${playerId} > ${perso ?? persoId}:
   transaction=${transaction.id}
   roll=${transaction.roll}
@@ -142,10 +158,17 @@ export class Stagiaire extends Bot {
       const playerDiscord = channel.client.users.cache.get(playerId);
       const ping = playerDiscord ? `${playerDiscord}, ` : "";
       await channel.send(`${ping}${content.join("\n")}`);
+      this.unsetTransactionTimer(transaction);
       this.updateTransaction(playerId, persoId, transaction.id, {
         received: true,
       });
     }, Math.max(next, 1));
+    this.timers[transaction.id] = timer;
+  }
+
+  unsetTransactionTimer(transaction: Transaction) {
+    clearTimeout(this.timers[transaction.id]);
+    delete this.timers[transaction.id];
   }
 
   private getRollResult(transaction: Transaction, item: Item, perso: string) {
@@ -204,11 +227,12 @@ export class Stagiaire extends Bot {
 
   private updateTransaction(playerId: string, persoId: string, id: string, transaction: Partial<Transaction>) {
     const storage = getStorage();
-    if (!storage?.players?.[playerId]?.[persoId]) return;
-    const index = storage.players[playerId][persoId].transactions.findIndex((t) => t.id === id);
+    const perso = storage?.players?.[playerId]?.[persoId];
+    if (!storage || !perso) return;
+    const index = perso.transactions.findIndex((t) => t.id === id);
     if (index < 0) return;
-    storage.players[playerId][persoId].transactions[index] = {
-      ...storage.players[playerId][persoId].transactions[index],
+    perso.transactions[index] = {
+      ...perso.transactions[index],
       ...transaction,
     };
     setStorage(storage);
