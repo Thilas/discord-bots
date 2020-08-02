@@ -83,7 +83,7 @@ export class Stagiaire extends Bot {
           );
           if (matchLists?.groups && localeEquals(matchLists.groups.trigger, this.config.triggers.list)) {
             if (await channel.isValidTrigger(message, this.config.triggers.list, matchLists.groups)) {
-              await channel.writeList(message, matchLists.groups, this.config);
+              await channel.writeList(message, matchLists.groups);
             }
             return;
           }
@@ -144,7 +144,15 @@ export class Stagiaire extends Bot {
   }
 
   //#region Requests
-  private addTransaction(message: Message, roll: number, bonus: number, item: Item, data: InputData, quantity: number) {
+  private addTransaction(
+    message: Message,
+    channel: Channel,
+    roll: number,
+    bonus: number,
+    item: Item,
+    data: InputData,
+    quantity: number
+  ) {
     const transaction: Transaction = {
       id: uuidv4(),
       roll: roll,
@@ -173,6 +181,12 @@ export class Stagiaire extends Bot {
         transactions: [],
       } as Character;
     }
+
+    const error = channel.isValidTransaction(transaction, perso);
+    if (error) {
+      return new Error(error);
+    }
+
     perso.transactions.push(transaction);
     this.setStorage(storage);
     this.setRequestTimer(message, transaction, item, message.author.id, persoId, data.perso);
@@ -351,9 +365,9 @@ export class Stagiaire extends Bot {
   private getItemChannel(message: Message) {
     switch (message.channel.id) {
       case this.config.triggers.plants.chanPlayers:
-        return new PlantChannel(this);
+        return new PlantChannel(this, this.config);
       case this.config.triggers.potions.chanPlayers:
-        return new PotionChannel(this);
+        return new PotionChannel(this, this.config);
     }
   }
 
@@ -362,10 +376,10 @@ export class Stagiaire extends Bot {
     channel: Channel,
     trigger: string,
     groups: Groups,
-    getWrongChannels?: (config: Config) => Items | Items[] | undefined
+    getWrongChannels?: () => Items | Items[] | undefined
   ) {
     if (getWrongChannels) {
-      const wrongChannels = getWrongChannels(this.config);
+      const wrongChannels = getWrongChannels();
       if (wrongChannels) {
         if (Array.isArray(wrongChannels)) {
           await this.writeErrorWrongChannelCommand(message, channel, ...wrongChannels);
@@ -491,7 +505,12 @@ export class Stagiaire extends Bot {
 
     // Send Roll Request
     const request = roll(this.config.maxRoll ?? 100);
-    const { perso, transaction } = this.computeRoll(message, request, bonus, item, data);
+    const result = this.computeRoll(message, channel, request, bonus, item, data);
+    if (result instanceof Error) {
+      await this.writeError(message, result.message);
+      return;
+    }
+    const { perso, transaction } = result;
     this.log(
       `Rolling ${item.name} among ${item.kind} by ${message.author.id} > ${data.perso}:
   bonus=${data.bonus}
@@ -508,12 +527,12 @@ export class Stagiaire extends Bot {
     await this.sendMessage(message, content, false, true);
   }
 
-  private computeRoll(message: Message, roll: number, bonus: number, item: Item, data: InputData) {
+  private computeRoll(message: Message, channel: Channel, roll: number, bonus: number, item: Item, data: InputData) {
     let quantity = 0;
     switch (roll) {
       case 1:
       case 2:
-        return this.addTransaction(message, roll, bonus, item, data, quantity);
+        return this.addTransaction(message, channel, roll, bonus, item, data, quantity);
       case 99:
       case 100:
         quantity += 1;
@@ -528,7 +547,7 @@ export class Stagiaire extends Bot {
     } else if (total >= 50) {
       quantity += 2;
     }
-    return this.addTransaction(message, roll, bonus, item, data, quantity);
+    return this.addTransaction(message, channel, roll, bonus, item, data, quantity);
   }
 
   private getRollResult(transaction: Transaction, item: Item, perso: string) {
@@ -618,7 +637,7 @@ export class Stagiaire extends Bot {
     return { path: file, exists };
   }
 
-  private getStorage() {
+  public getStorage() {
     const file = this.getStorageFile();
     if (!file.exists) return;
     const data = fs.readFileSync(file.path);
@@ -663,25 +682,25 @@ type ChannelType = "chanPlayers" | "chanMJ";
 
 class PlantChannel {
   readonly kind: Plants = "plants";
-  constructor(readonly stagiaire: Stagiaire) {}
+  constructor(private readonly stagiaire: Stagiaire, private readonly config: Config) {}
 
   async isValidTrigger(message: Message, trigger: string, groups: Groups) {
-    return this.stagiaire.isValidTrigger(message, this, trigger, groups, (config) => {
-      if (trigger === config.triggers.list && groups.ingredient) return "plants";
+    return this.stagiaire.isValidTrigger(message, this, trigger, groups, () => {
+      if (trigger === this.config.triggers.list && groups.ingredient) return "plants";
     });
   }
 
-  async writeList(message: Message, groups: Groups, config: Config) {
+  async writeList(message: Message, groups: Groups) {
     const difficulty = this.stagiaire.getDifficulty(groups);
     this.stagiaire.log(
       `Listing plants by ${message.author.id}: difficulty=${groups.difficulty}, category=${groups.category}`
     );
-    const items = config.plants.filter((item) => {
+    const items = this.config.plants.filter((item) => {
       if (difficulty && item.level !== difficulty) return false;
       return !groups.category || this.stagiaire.hasCategory(item, groups.category);
     });
     if (!items.length) {
-      return this.stagiaire.sendMessage(message, config.messages.errors.listResultsNotFound.plants, true, true);
+      return this.stagiaire.sendMessage(message, this.config.messages.errors.listResultsNotFound.plants, true, true);
     }
     let n = 1;
     await this.stagiaire.sendMessage(message, `${items.length} plante(s) trouvée(s)`, false, true);
@@ -703,24 +722,26 @@ Usages :
   getItem(input: string) {
     return this.stagiaire.getPlant(input);
   }
+
+  isValidTransaction(transaction: Transaction, perso: Character) {}
 }
 
 class PotionChannel {
   readonly kind: Potions = "potions";
-  constructor(readonly stagiaire: Stagiaire) {}
+  constructor(private readonly stagiaire: Stagiaire, private readonly config: Config) {}
 
   async isValidTrigger(message: Message, trigger: string, groups: Groups) {
     return this.stagiaire.isValidTrigger(message, this, trigger, groups);
   }
 
-  async writeList(message: Message, groups: Groups, config: Config) {
+  async writeList(message: Message, groups: Groups) {
     const difficulty = this.stagiaire.getDifficulty(groups);
     const plant = groups.ingredient ? this.stagiaire.getPlant(groups.ingredient) : undefined;
     const ingredient = plant ? plant.name : groups.ingredient;
     this.stagiaire.log(
       `Listing potions by ${message.author.id}: difficulty=${groups.difficulty}, ingredient=${groups.ingredient}, category=${groups.category}`
     );
-    const items = config.potions.filter((item) => {
+    const items = this.config.potions.filter((item) => {
       if (difficulty && item.level !== difficulty) return false;
       if (ingredient) {
         if (localeEquals("aucun", ingredient)) {
@@ -732,7 +753,7 @@ class PotionChannel {
       return !groups.category || this.stagiaire.hasCategory(item, groups.category);
     });
     if (!items.length) {
-      return this.stagiaire.sendMessage(message, config.messages.errors.listResultsNotFound.potions, true, true);
+      return this.stagiaire.sendMessage(message, this.config.messages.errors.listResultsNotFound.potions, true, true);
     }
     let n = 1;
     await this.stagiaire.sendMessage(message, `${items.length} potion(s) trouvée(s)`, false, true);
@@ -753,6 +774,12 @@ Ingrédients : ${item.plants.join(", ") || "aucun"}
 
   getItem(input: string) {
     return this.stagiaire.getPotion(input);
+  }
+
+  isValidTransaction(transaction: Transaction, perso: Character) {
+    if (perso.transactions.some((t) => !t.received)) {
+      return this.config.messages.errors.hasOngoingPotion;
+    }
   }
 }
 //#endregion

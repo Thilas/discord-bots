@@ -35,6 +35,7 @@
       "wrongSemester": "wrong semester",
       "wrongGift": "wrong gift",
       "bonusNotFound": "bonus not found",
+      "hasOngoingPotion": "a potion is already ongoing",
       "listResultsNotFound": {
         "plants": "plants not found",
         "potions": "potions not found"
