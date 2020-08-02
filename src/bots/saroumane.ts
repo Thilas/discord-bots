@@ -36,8 +36,8 @@ export class Saroumane extends Bot {
   });
 
   constructor(token: string) {
-    super(token, (client) => {
-      client.on("message", async (message) => {
+    super(token, () => {
+      this.client.on("message", async (message) => {
         const msg = message.content.toUpperCase();
 
         if (msg.substring(0, this.config.triggers.tellMe.length) === this.config.triggers.tellMe) {

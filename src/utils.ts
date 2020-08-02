@@ -1,5 +1,5 @@
-export const locale = "fr-FR";
-export const timeZone = "Europe/Paris";
+const locale = "fr-FR";
+const timeZone = "Europe/Paris";
 
 export interface Args {
   [key: string]: any;
@@ -84,4 +84,15 @@ export function ellipsis(value: string, maxSize: number, message: string) {
     value = `${value.substring(0, maxSize - message.length - 3)} > ${message}`;
   }
   return value;
+}
+
+export function formatTime(time: string | number | Date): string {
+  return new Date(time).toLocaleString(locale, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: timeZone,
+  });
 }
