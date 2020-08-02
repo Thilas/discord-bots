@@ -15,12 +15,8 @@
                 "roll": 45,
                 "fit": "blabla",
                 "points": 2,
-                "bitches": [
-                  "Elly#0624"
-                ],
-                "escaped": [
-                  "Elly#0624"
-                ]
+                "bitches": ["Elly#0624"],
+                "escaped": ["Elly#0624"]
               },
               {
                 "roll": 17,

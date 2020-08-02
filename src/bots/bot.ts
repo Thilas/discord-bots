@@ -9,10 +9,7 @@ export abstract class Bot {
    * @param token Token of the account to log in with.
    * @param builder Callback to configure the Discord client.
    */
-  protected constructor(
-    private readonly token: string,
-    builder: (client: Client) => void
-  ) {
+  protected constructor(private readonly token: string, builder: (client: Client) => void) {
     this.log("Starting...");
     this.client
       .on("disconnect", () => this.log("Disconnected"))

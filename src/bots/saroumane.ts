@@ -40,62 +40,32 @@ export class Saroumane extends Bot {
       client.on("message", async (message) => {
         const msg = message.content.toUpperCase();
 
-        if (
-          msg.substring(0, this.config.triggers.tellMe.length) ===
-          this.config.triggers.tellMe
-        ) {
+        if (msg.substring(0, this.config.triggers.tellMe.length) === this.config.triggers.tellMe) {
           const answer = this.getAnswerTellMe();
-          this.log(
-            `Reply "${answer}" to "${message.content}" from ${message.author.tag}`
-          );
+          this.log(`Reply "${answer}" to "${message.content}" from ${message.author.tag}`);
           await message.reply(answer);
-        } else if (
-          msg.substring(0, this.config.triggers.whichPlayer.length) ===
-          this.config.triggers.whichPlayer
-        ) {
+        } else if (msg.substring(0, this.config.triggers.whichPlayer.length) === this.config.triggers.whichPlayer) {
           const answer = this.getAnswerWhichPlayer();
-          this.log(
-            `Reply "${answer}" to "${message.content}" from ${message.author.tag}`
-          );
+          this.log(`Reply "${answer}" to "${message.content}" from ${message.author.tag}`);
           await message.reply(answer);
         } else if (
-          msg.substring(0, this.config.triggers.whichCharacter.length) ===
-          this.config.triggers.whichCharacter
+          msg.substring(0, this.config.triggers.whichCharacter.length) === this.config.triggers.whichCharacter
         ) {
           const answer = this.getAnswerWhichCharacter();
-          this.log(
-            `Reply "${answer}" to "${message.content}" from ${message.author.tag}`
-          );
+          this.log(`Reply "${answer}" to "${message.content}" from ${message.author.tag}`);
           await message.reply(answer);
-        } else if (
-          msg.substring(0, this.config.triggers.who.length) ===
-          this.config.triggers.who
-        ) {
+        } else if (msg.substring(0, this.config.triggers.who.length) === this.config.triggers.who) {
           const answer = this.getAnswerWho();
-          this.log(
-            `Reply "${answer}" to "${message.content}" from ${message.author.tag}`
-          );
+          this.log(`Reply "${answer}" to "${message.content}" from ${message.author.tag}`);
           await message.reply(answer);
-        } else if (
-          msg.substring(0, this.config.triggers.bawdySong.length) ===
-          this.config.triggers.bawdySong
-        ) {
+        } else if (msg.substring(0, this.config.triggers.bawdySong.length) === this.config.triggers.bawdySong) {
           const song = this.getSong();
-          this.log(
-            `Reply "${song}" to "${message.content}" from ${message.author.tag}`
-          );
+          this.log(`Reply "${song}" to "${message.content}" from ${message.author.tag}`);
           await message.reply(song);
-        } else if (
-          msg.substring(0, this.config.triggers.makeMeSweat.length) ===
-          this.config.triggers.makeMeSweat
-        ) {
+        } else if (msg.substring(0, this.config.triggers.makeMeSweat.length) === this.config.triggers.makeMeSweat) {
           const fit = this.getFit();
-          const maso = message.content
-            .substring(this.config.triggers.makeMeSweat.length)
-            .trim();
-          this.log(
-            `Reply "${fit}" to "${message.content}" from ${message.author.tag}`
-          );
+          const maso = message.content.substring(this.config.triggers.makeMeSweat.length).trim();
+          this.log(`Reply "${fit}" to "${message.content}" from ${message.author.tag}`);
           await message.channel.send(maso + ", " + fit);
         }
       });
@@ -130,9 +100,7 @@ export class Saroumane extends Bot {
 
   private getAnswerWho() {
     const answer = this.getTypeAnswerWho();
-    const names = this.config.answers.players.concat(
-      this.config.answers.characters
-    );
+    const names = this.config.answers.players.concat(this.config.answers.characters);
     return getRandom(names);
   }
 
@@ -142,25 +110,11 @@ export class Saroumane extends Bot {
     const rollMalus = roll(100);
 
     if (rollMalus > 89) {
-      return (
-        "bravo ! Demande à n'importe qui de faire " +
-        exercise +
-        " pour " +
-        points.toString() +
-        " point(s)"
-      );
+      return "bravo ! Demande à n'importe qui de faire " + exercise + " pour " + points.toString() + " point(s)";
     } else if (rollMalus < 11) {
-      return (
-        "grâce à toi, tout le monde doit faire " +
-        exercise +
-        " pour " +
-        points.toString() +
-        " point(s)"
-      );
+      return "grâce à toi, tout le monde doit faire " + exercise + " pour " + points.toString() + " point(s)";
     } else {
-      return (
-        "fais-nous " + exercise + " pour " + points.toString() + " point(s)"
-      );
+      return "fais-nous " + exercise + " pour " + points.toString() + " point(s)";
     }
   }
 }

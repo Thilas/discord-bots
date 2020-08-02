@@ -35,11 +35,7 @@ export function load<T>(filename: string, config: T) {
  * @param apply Callback to apply changes of the config file.
  * @returns The relevant config.
  */
-export function loadAndWatch<T>(
-  filename: string,
-  config: T,
-  apply: (config: T) => void
-) {
+export function loadAndWatch<T>(filename: string, config: T, apply: (config: T) => void) {
   const configMetadata = getConfigMetadata(filename);
   let timeout: NodeJS.Timeout | undefined;
   fs.watch(configMetadata.file, (event) => {
@@ -70,11 +66,7 @@ export function loadAndWatch<T>(
   return config;
 }
 
-function loadConfig<T>(
-  filename: string,
-  config: T,
-  configMetadata = getConfigMetadata(filename)
-) {
+function loadConfig<T>(filename: string, config: T, configMetadata = getConfigMetadata(filename)) {
   console.log(`** Loading ${filename} from ${configMetadata.file}...`);
   if (!configMetadata.overridden) {
     throw `Missing configuration file: ${configMetadata.name}`;
