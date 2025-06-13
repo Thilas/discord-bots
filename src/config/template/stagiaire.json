@@ -1,0 +1,993 @@
+{
+  "tagBotId": "",
+  "tagBotRoles": [""],
+  "summary": {
+    "cron": "0 16 * * Mon,Wed,Fri",
+    "cron2": "0 18 * * Wed,Sun"
+  },
+  "triggers": {
+    "help": "aide-moi",
+    "list": "liste",
+    "plants": {
+      "roll": "cultive",
+      "chanPlayers": "",
+      "chanMJ": "",
+      "MJ": [""]
+    },
+    "potions": {
+      "roll": "prépare",
+      "chanPlayers": "",
+      "chanMJ": "",
+      "MJ": [""]
+    }
+  },
+  "messages": {
+    "errors": {
+      "wrongChannel": ":smart:\nJe ne fonctionne pas sur ce salon. Va sur {plantChannel} ou {potionChannel} et tape la commande :\n```yaml\naide-moi\n```",
+      "wrongChannelCommand": {
+        "plants": ":confused:\nJ'ai très envie de t'aider, mais tu n'es pas sur le bon salon. Réessaie sur {channels}",
+        "potions": ":confused:\nJ'ai très envie de t'aider, mais tu n'es pas sur le bon salon. Réessaie sur {channels}"
+      },
+      "wrongSyntax": ":thinking:\nJe ne comprends pas ce que tu me demandes, alors tu peux essayer la commande :\n```yaml\naide-moi\n```",
+      "wrongItem": {
+        "plants": ":scream:\nJe ne connais pas cette plante. Tu peux toutes les afficher en tapant la commande:\n```yaml\nliste\n```",
+        "potions": ":scream:\nJe ne connais pas cette potion. Tu peux toutes les afficher en tapant la commande:\n```yaml\nliste\n```"
+      },
+      "wrongSemester": ":cold_sweat:\nJe n'ai pas compris en quel semestre est ton personnage. Tape la commande suivante pour connaître la syntaxe que j'attends :\n```yaml\naide-moi {triggerItem}\n```",
+      "wrongGift": ":pleading_face: \nJe n'ai pas compris si ton personnage a un don particulier pour la botanique et les potions. Tape la commande suivante pour connaître la syntaxe que j'attends :\n```yaml\naide-moi {triggerItem}\n```",
+      "bonusNotFound": ":woozy_face: \nJe n'arrive pas à calculer le bonus à partir des informations que tu m'as données. ",
+      "listResultsNotFound": {
+        "plants": ":yamete: \nJe n'ai pas trouvé la moindre plante. Tu as peut-être trop restreint ta recherche, ou fait une faute de frappe ? Essaie la commande :\n```yaml\naide-moi liste\n```",
+        "potions": ":yamete: \nJe n'ai pas trouvé la moindre potion. Tu as peut-être trop restreint ta recherche, ou fait une faute de frappe ? Essaie la commande :\n```yaml\naide-moi liste\n```"
+      }
+    },
+    "results": {
+      "failures": {
+        "1": {
+          "plants": "en revenant à la serre, {perso} peut non seulement constater que sa culture de {item} n'a rien donné, mais également que son pot est inutilisable pour {duration} jours. Ce n'est vraiment pas de chance !",
+          "potions": [
+            {
+              "level": 1,
+              "messages": [
+                "lorsque {perso} revient au laboratoire de potions, sa préparation de {item} explose dans un bruit assourdissant. Lorsque ses oreilles finissent enfin de siffler, {perso} se rend compte qu'il/elle ne peut plus rien entendre. Cette surdité durera 1 semaine HRP.",
+                "en revenant au laboratoire de potions, {perso} constate que sa préparation de {item} a brûlé. Pendant 4 jours HRP, {perso} aura la désagréable impression qu'une odeur particulièrement désagréable de potion brûlée le/la suit partout."
+              ]
+            },
+            {
+              "level": 2,
+              "messages": [
+                "lorsque {perso} revient au laboratoire de potions, sa préparation de {item} explose, projetant la préparation bouillonnante sur ses avants-bras. Une brûlure de cette ampleur, à condition qu'elle soit traitée en urgence par un médecin, nécessite le port de bandages pendant 3 jours HRP. A leur retrait, des cicatrices sont encore visibles pendant 2 jours HRP supplémentaires.",
+                "en revenant au laboratoire de potions, {perso} constate que sa préparation de {item} a brûlé. Pendant 4 jours HRP, une odeur particulièrement désagréable de potion brûlée entourera {perso} dans un rayon de 4 mètres."
+              ]
+            },
+            {
+              "level": 3,
+              "messages": [
+                "lorsque {perso} revient au laboratoire de potions, une étrange fumée se dégage de sa préparation de {item}, et {perso} la respire par accident. Les vapeurs toxiques plongent {perso} dans un coma profond pendant 4 jours HRP.",
+                "lorsque {perso} revient au laboratoire de potions, une étrange fumée se dégage de sa préparation de {item}, et {perso} se brûle accidentellement les yeux, ce qui le/la rendra aveugle pendant 5 jours HRP."
+              ]
+            }
+          ]
+        },
+        "2": {
+          "plants": "en revenant à la serre, {perso} peut non seulement constater que sa culture de {item} n'a rien donné, mais également que son pot est inutilisable pour {duration} jours. Ce n'est vraiment pas de chance !",
+          "potions": [
+            {
+              "level": 1,
+              "messages": [
+                "lorsque {perso} revient au laboratoire de potions, une étrange fumée se dégage de sa préparation de {item}, et {perso} la respire par accident. Les vapeurs irritantes piqueront la gorge de {perso} pendant 2 jours HRP, lui causant ainsi des crises de toux incontrôlables.",
+                "lorsque {perso} revient au laboratoire de potions, une étrange fumée se dégage de sa préparation de {item}, et {perso} la respire par accident. {perso} s'en sortira avec un bon rhume qui durera 2 jours HRP.",
+                {
+                  "message": "en revenant au laboratoire de potions, {perso} se fait éclabousser {area} par la potion qui déborde. Pendant 2 jours HRP, cette zone sera donc colorée de {color}.",
+                  "area": ["les cheveux", "les mains", "les bras", "le visage"]
+                }
+              ]
+            },
+            {
+              "level": 2,
+              "messages": [
+                "lorsque {perso} revient au laboratoire de potions, une étrange fumée se dégage de sa préparation de {item}, et {perso} la respire par accident. Pendant 3 jours HRP, {perso} souffrira ainsi de somnolence.",
+                "en revenant au laboratoire de potions, {perso} se fait éclabousser le visage par sa préparation de {item} qui déborde. Pendant 4 jours HRP, celui-ci sera donc coloré de {color}.",
+                {
+                  "message": "lorsque {perso} revient au laboratoire de potions, une étrange vapeur se dégage de sa préparation de {item}, et {perso} l'inhale par accident, {consequence} pour 5 jours HRP.",
+                  "consequence": [
+                    "le/la rendant muet(te)",
+                    "lui faisant perdre le sens du goût"
+                  ]
+                }
+              ]
+            },
+            {
+              "level": 3,
+              "messages": [
+                "lorsque {perso} revient au laboratoire de potions, une étrange fumée se dégage de sa préparation de {item}, et {perso} se brûle accidentellement les yeux. Il en résulte de graves troubles de la vision pendant 4 jours HRP, rendant extrêmement difficile de reconnaître les gens autour d'elle/de lui.",
+                "lorsque {perso} revient au laboratoire de potions, sa préparation bouillonnante de {item} explose, la projetant sur son visage. Une brûlure de cette ampleur, à condition qu'elle soit traitée en urgence par un médecin, nécessite le port de bandages pendant 3 jours HRP. A leur retrait, des cicatrices sont encore visibles pendant 2 jours HRP supplémentaires.",
+                "lorsque {perso} revient au laboratoire de potions, sa préparation de {item} explose, la projetant partout sur lui/elle. C'est en se séchant le crâne que {perso} constate que ses cheveux tombent mèche après mèche jusqu'à ce qu'il/elle soit chauve. Fort heureusement, le crâne n'a pas été brûlé, et il semblerait que ses cheveux pourront repousser normalement par la suite."
+              ]
+            }
+          ]
+        }
+      },
+      "missed": {
+        "plants": "en revenant à la serre, {perso} peut constater que sa culture de {item} n'a rien donné.",
+        "potions": "en revenant au laboratoire de potions, {perso} peut constater que sa préparation de {item} a échoué."
+      },
+      "success": {
+        "plants": "en revenant à la serre, {perso} peut constater que sa culture lui permet d'obtenir {quantity} plants de {item}.",
+        "potions": "en revenant au laboratoire de potions, {perso} peut constater qu'il/elle obtient {quantity} fioles de {item}."
+      },
+      "logs": {
+        "plants": "*(Roll : {roll} | Bonus appliqué : {bonus})*",
+        "potions": "*(Roll : {roll} | Bonus appliqué : {bonus} | Ingrédients : {ingredients})*"
+      }
+    },
+    "help": {
+      "potions": {
+        "general": ":nerd:\nTu as bien fait de m'appeler, je ne demande qu'à t'aider ! Ici, tu es sur {potionChannel} donc tu te doutes bien que je vais parler de potions ... Cela dit, j'imagine que t'es pas là pour papoter, alors entrons dans le vif du sujet ! Il te suffit de taper les commandes suivantes pour en savoir plus sur moi :\n```aide-moi liste\naide-moi prépare```\nSi tu veux en savoir plus sur les plantes en revanche, essaie la commande suivante sur {plantChannel} :\n```aide-moi```\n",
+        "commands": {
+          "list": ":nerd:\n\nPour afficher la liste des potions, utilise la commande :\n```cs\nliste 'difficulté' 'catégorie' ('ingrédient')\n\n'difficulté' - 1, 2 ou 3 #optionnel\n'catégorie' - 'beauté', 'santé', 'utilitaire' ou 'animaux' #optionnel\n'ingrédient' - un ingrédient de la potion recherchée, ou 'aucun'  #optionnel\n\nLa recherche est insensible aux accents et à la casse.\n```\n**Exemples**\n*Potions de difficulté 2 :*\n```liste 2\n```\n*Potions utilitaires :*\n```liste utilitaire\n```\n*Potions contenant de la menthe poivrée :*\n```liste (menthe poivree)\nliste (Menthe)\n```\n*Potions utilitaires, sans ingrédients, de difficulté 1 :*\n```liste 1 utilitaire (aucun)\n```\nLa liste des ingrédients possibles est consultable sur {plantChannel} : utilises-y la commande suivante pour plus d'informations :\n```aide-moi liste\n```\n",
+          "roll": ":nerd:\nPour préparer une potion, utilise l'une des commandes suivantes, selon si tu connais déjà le bonus (ou malus) à appliquer, ou si tu souhaites que je le calcule :\n```cs\nprépare 'potion' ('perso' 'bonus')\nprépare 'potion' ('perso' 'semestre' 'don?')\n\n'potion' - nom de la potion à préparer\n'perso' - nom du personnage qui prépare la potion\n'semestre' - 1, 2 ou 3 si ton personnage est encore à Valyria, 'x' sinon\n'don?' - 1 si ton perso a le don 'Alchimiste', 0 sinon\n\nLes noms de potions sont insensibles aux accents et à la casse. De plus, plusieurs syntaxes sont acceptées.\n```\n**Exemples**\n*Potion Stimulus pour Camille, en 3ème semestre et qui ne possède pas le don Alchimiste :*\n```prépare stimulus (Camille 3 0)\n```\n*Potion Pugna pour Alex, qui a fini Valyria et qui a le don Alchimiste :*\n```prépare PUGNA (Alex x 1)\n```\n*Potion Hémo pour Emilie, qui a préparé sa potion avec l'aide d'un élève plus âgé et a convenu avec les MJ d'un malus de 10 :*\n```prépare Hémo (Emilie -10)\n```\n*Potion du sommeil pour Tom, qui connaît par coeur son bonus :*\n```prépare Sommeil (Tom 20)\n```\n\nPour consulter les différentes syntaxes possibles pour une potion, utilise la commande :\n```cs\naide-moi liste\n```\n"
+        }
+      },
+      "plants": {
+        "general": ":nerd:\nTu as bien fait de m'appeler, je ne demande qu'à t'aider ! Ici, tu es sur {plantChannel} donc tu te doutes bien que je vais parler de plantes ... Cela dit, j'imagine que t'es pas là pour papoter, alors entrons dans le vif du sujet ! Il te suffit de taper les commandes suivantes pour en savoir plus sur moi :\n```aide-moi liste\naide-moi cultive```\nSi tu veux en savoir plus sur les potions en revanche, essaie la commande suivante sur {potionChannel} :\n```aide-moi```\n",
+        "commands": {
+          "list": ":nerd:\n\nPour afficher la liste des plantes, utilise la commande :\n```cs\nliste 'difficulté' 'catégorie'\n\n'difficulté' - 1 ou 2 #optionnel\n'catégorie' - 'beauté', 'santé', 'utilitaire' ou 'animaux' #optionnel\n\nLa recherche est insensible aux accents et à la casse.\n```\n**Exemples**\n*Plantes de difficulté 2 :*\n```liste 2\n```\n*Plantes utilitaires :*\n```liste utilitaire\n```\n*Plantes utilitaires de difficulté 1 :*\n```liste 1 UTILITAIRE\n```\n",
+          "roll": ":nerd:\nPour cultiver une plante, utilise l'une des commandes suivantes, selon si tu connais déjà le bonus (ou malus) à appliquer, ou si tu souhaites que je le calcule :\n```cs\ncultive 'plante' ('perso' 'bonus')\ncultive 'plante' ('perso' 'semestre' 'don?')\n\n'plante' - nom de la plante à cultiver\n'perso' - nom du personnage qui cultive la plante\n'semestre' - 1, 2 ou 3 si ton personnage est encore à Valyria, 'x' sinon\n'don?' - 1 si ton perso a le don 'Alchimiste', 0 sinon\n\nLes noms de plantes sont insensibles aux accents et à la casse. De plus, plusieurs syntaxes sont acceptées.\n```\n**Exemples**\n*Acérola pour Camille, en 3ème semestre et qui ne possède pas le don Alchimiste :*\n```cultive acerola (Camille 3 0)\n```\n*Menthe poivrée pour Alex, qui a fini Valyria et qui a le don Alchimiste :*\n```cultive menthe (Alex x 1)\n```\n*Sauge officinale pour Emilie, qui a cultivé sa plante avec l'aide d'un élève plus âgé et a convenu avec les MJ d'un malus de 10 :*\n```cultive sauge (Emilie -10)\n```\n*Lavande pour Tom, qui connaît par coeur son bonus :*\n```cultive LAVANDE (Tom 20)\n```\n\nPour consulter les différentes syntaxes possibles pour une plante, utilise la commande :\n```cs\naide-moi liste\n```\n"
+        }
+      }
+    },
+    "confirmation": {
+      "plants": "{perso} peut à présent quitter la serre. A son retour le {time}, {perso} saura si sa culture a porté ses fruits.",
+      "potions": "{perso} peut à présent quitter le laboratoire de potions. A son retour le {time}, {perso} saura si sa potion est réussie."
+    }
+  },
+  "bonuses": {
+    "plants": [
+      {
+        "level": 1,
+        "semester": 1,
+        "bonus": -20
+      },
+      {
+        "level": 1,
+        "semester": 2,
+        "bonus": 0
+      },
+      {
+        "level": 1,
+        "semester": 3,
+        "bonus": 20
+      },
+      {
+        "level": 1,
+        "semester": "x",
+        "bonus": 30
+      },
+      {
+        "level": 2,
+        "semester": 1,
+        "bonus": -40
+      },
+      {
+        "level": 2,
+        "semester": 2,
+        "bonus": -20
+      },
+      {
+        "level": 2,
+        "semester": 3,
+        "bonus": 0
+      },
+      {
+        "level": 2,
+        "semester": "x",
+        "bonus": 10
+      }
+    ],
+    "potions": [
+      {
+        "level": 1,
+        "semester": 1,
+        "bonus": -20
+      },
+      {
+        "level": 1,
+        "semester": 2,
+        "bonus": 0
+      },
+      {
+        "level": 1,
+        "semester": 3,
+        "bonus": 20
+      },
+      {
+        "level": 1,
+        "semester": "x",
+        "bonus": 30
+      },
+      {
+        "level": 2,
+        "semester": 1,
+        "bonus": -30
+      },
+      {
+        "level": 2,
+        "semester": 2,
+        "bonus": -10
+      },
+      {
+        "level": 2,
+        "semester": 3,
+        "bonus": 10
+      },
+      {
+        "level": 2,
+        "semester": "x",
+        "bonus": 20
+      },
+      {
+        "level": 3,
+        "semester": 1,
+        "bonus": -40
+      },
+      {
+        "level": 3,
+        "semester": 2,
+        "bonus": -20
+      },
+      {
+        "level": 3,
+        "semester": 3,
+        "bonus": 0
+      },
+      {
+        "level": 3,
+        "semester": "x",
+        "bonus": 10
+      }
+    ]
+  },
+  "categories": ["Beauté", "Santé", "Utilitaire", "Animaux"],
+  "plants": [
+    {
+      "key": [],
+      "categories": ["Animaux"],
+      "description": "",
+      "name": "Absinthe",
+      "level": 1,
+      "duration": 3,
+      "usages": ["Potion Vermifuges", "*Les feuilles repoussent les insectes*"]
+    },
+    {
+      "key": [],
+      "categories": ["Utilitaire", "Animaux"],
+      "description": "",
+      "name": "Coquelicot",
+      "level": 1,
+      "duration": 3,
+      "usages": ["Potion du légume", "*Infusion pour apaiser la toux*"]
+    },
+    {
+      "key": [],
+      "categories": ["Santé", "Animaux"],
+      "description": "",
+      "name": "Fenugrec",
+      "level": 1,
+      "duration": 3,
+      "usages": [
+        "Potion de convalescence",
+        "*Fourrage pour les animaux*",
+        "*Attire les mammifères herbivores*"
+      ]
+    },
+    {
+      "key": [],
+      "categories": ["Santé"],
+      "description": "",
+      "name": "Guimauve",
+      "level": 1,
+      "duration": 3,
+      "usages": [
+        "Baume contre les démangeaisons",
+        "*Infusion pour apaiser la toux*"
+      ]
+    },
+    {
+      "key": [],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Houblon",
+      "level": 1,
+      "duration": 3,
+      "usages": ["Potion Anesthésia", "*Infusion contre l'insomnie*"]
+    },
+    {
+      "key": [],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Hysope",
+      "level": 1,
+      "duration": 3,
+      "usages": [
+        "Baume Contusus",
+        "Baume d'Injuriam",
+        "*Infusion pour aider la digestion*",
+        "*Infusion pour soulager les maux d'estomac ou au foie*"
+      ]
+    },
+    {
+      "key": [],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Lavande",
+      "level": 1,
+      "duration": 3,
+      "usages": [
+        "Potion contre la douleur",
+        "*Infusion pour soulager les maux de tête*",
+        "*Infusion pour soulager l'anxiété*"
+      ]
+    },
+    {
+      "key": [],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Marjolaine",
+      "level": 1,
+      "duration": 3,
+      "usages": [
+        "Potion Anesthésia",
+        "*Infusion contre l'insomnie*",
+        "*Infusion pour soulager l'anxiété*"
+      ]
+    },
+    {
+      "key": [],
+      "categories": ["Santé"],
+      "description": "",
+      "name": "Mélisse",
+      "level": 1,
+      "duration": 3,
+      "usages": [
+        "*Infusion pour soulager les vertiges*",
+        "*Infusion contre le stress*"
+      ]
+    },
+    {
+      "key": ["Menthe"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Menthe poivrée",
+      "level": 1,
+      "duration": 3,
+      "usages": [
+        "Potion Vomite",
+        "*A mâcher pour lutter contre la mauvaise haleine*",
+        "*Infusion pour aider la digestion*",
+        "*Infusion pour soulager les maux d'estomac ou au foie*"
+      ]
+    },
+    {
+      "key": [],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Pâquerette",
+      "level": 1,
+      "duration": 3,
+      "usages": [
+        "Baume pour entorse ou foulure",
+        "*Infusion pour soulager les maux de tête*"
+      ]
+    },
+    {
+      "key": [],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Souci",
+      "level": 1,
+      "duration": 3,
+      "usages": [
+        "Baume contre les brûlures",
+        "Baume d'injuriam",
+        "*Soulage et fait un premier pas pour la guérison d'engelures*",
+        "*Soulage et fait un premier pas pour la guérison de brûlures*",
+        "*Soulage et fait un premier pas pour la guérison de plaies infectées*"
+      ]
+    },
+    {
+      "key": [],
+      "categories": ["Santé", "Utilitaire", "Animaux"],
+      "description": "",
+      "name": "Plantain",
+      "level": 1,
+      "duration": 3,
+      "usages": [
+        "Potion Pulmonis",
+        "Baume d'injuriam",
+        "*Les graines attirent les oiseaux*",
+        "*Les feuilles soulagent la douleur liée à une piqure d'insecte ou d'ortie quand on la frotte dessus*",
+        "*A mâcher pour retarder les effets du poison dus à une morsure de serpent*"
+      ]
+    },
+    {
+      "key": ["Pensée"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Pensée sauvage",
+      "level": 1,
+      "duration": 3,
+      "usages": [
+        "*La racine est vomitive, on l'utilise principalement lors de l'ingestion d'un poison ou d'une plante toxique pour l'extraire du corps rapidement.*"
+      ]
+    },
+    {
+      "key": ["Pervenche"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Petite pervenche",
+      "level": 1,
+      "duration": 3,
+      "usages": [
+        "Potion contre la fatigue nerveuse",
+        "Potion contre la fièvre",
+        "Potion Anémia"
+      ]
+    },
+    {
+      "key": [],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Acérola",
+      "level": 2,
+      "duration": 5,
+      "usages": [
+        "Baume petite blessure",
+        "*Le fruit est délicieux et peut être mangé*"
+      ]
+    },
+    {
+      "key": ["Citron"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Citronnier",
+      "level": 2,
+      "duration": 5,
+      "usages": ["Potion Pulmonis", "*Calme la soif*"]
+    },
+    {
+      "key": [],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Consoude",
+      "level": 2,
+      "duration": 5,
+      "usages": ["Potion Hémo", "Potion de l'os"]
+    },
+    {
+      "key": ["Sauge"],
+      "categories": ["Santé"],
+      "description": "",
+      "name": "Sauge officinale",
+      "level": 2,
+      "duration": 5,
+      "usages": [
+        "Gargarisme de bouche",
+        "On peut fumer les feuilles contre l'asthme"
+      ]
+    },
+    {
+      "key": [],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Pissenlit",
+      "level": 2,
+      "duration": 5,
+      "usages": ["Potion Sanguis"]
+    },
+    {
+      "key": [],
+      "categories": ["Santé", "Utilitaire", "Beauté"],
+      "description": "",
+      "name": "Prêle",
+      "level": 2,
+      "duration": 5,
+      "usages": ["Potion Hémo", "Dentifrice pour des dents parfaites"]
+    },
+    {
+      "key": [],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "",
+      "name": "Tilleul",
+      "level": 2,
+      "duration": 5,
+      "usages": ["Potion Sanguis", "Potion Venema"]
+    }
+  ],
+  "potions": [
+    {
+      "key": ["Capillum"],
+      "categories": ["Beauté"],
+      "description": "Lotion capillaire pour avoir des cheveux brillants et doux, aussi effet antipelliculaire",
+      "name": "Lotion Capillum",
+      "level": 1,
+      "duration": 8,
+      "color": "vert",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Stimulus"],
+      "categories": ["Utilitaire"],
+      "description": "Potion pour stimuler sa concentration et la mémoire.",
+      "name": "Potion Stimulus",
+      "level": 1,
+      "duration": 8,
+      "color": "bleu électrique",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Vomite"],
+      "categories": ["Utilitaire"],
+      "description": "Potion qui apaise ou empêche le vomissement. Utilisé pour le mal de mer ou transport en général.",
+      "name": "Potion Vomite",
+      "level": 1,
+      "duration": 8,
+      "color": "jaune foncé",
+      "valyria": true,
+      "plants": ["Menthe poivrée"]
+    },
+    {
+      "key": ["Fatigue physique", "Physique"],
+      "categories": ["Utilitaire"],
+      "description": "Potion contre la fatigue physique, effet tonus et stimulant.",
+      "name": "Potion contre la fatigue physique",
+      "level": 1,
+      "duration": 8,
+      "color": "brun",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Fatigue nerveuse", "Nerveuse"],
+      "categories": ["Utilitaire"],
+      "description": "Potion contre la fatigue nerveuse, psychique et intellectuelle, effet tonus et stimulant.",
+      "name": "Potion contre la fatigue nerveuse",
+      "level": 1,
+      "duration": 8,
+      "color": "vert-gris",
+      "valyria": true,
+      "plants": ["Petite pervenche"]
+    },
+    {
+      "key": ["Acné"],
+      "categories": ["Beauté"],
+      "description": "Lotion contre l'acné. En appliquer régulièrement, pas plus d'une fois par jour.",
+      "name": "Lotion contre l'acné",
+      "level": 1,
+      "duration": 8,
+      "color": "jaune-rose clair",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Yeux"],
+      "categories": ["Beauté"],
+      "description": "Lotion pour rougeur des paupières, yeux irrités et cernes. A appliquer avec un tissu.",
+      "name": "Lotion pour les yeux",
+      "level": 1,
+      "duration": 8,
+      "color": "jaune-rose",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["lèvres", "lèvre"],
+      "categories": ["Utilitaire", "Beauté"],
+      "description": "En appliquer régulièrement pour les réparer ou simplement les garder hydratées.",
+      "name": "Baume pour les lèvres",
+      "level": 1,
+      "duration": 8,
+      "color": "kaki",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Maladie de peaux", "Psoriasis", "Eczéma"],
+      "categories": ["Santé"],
+      "description": "Baume contre l'eczéma ou du psoriasis.",
+      "name": "Baume pour maladie de peaux",
+      "level": 1,
+      "duration": 8,
+      "color": "mauve",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Démangeaisons", "Démangeaison"],
+      "categories": ["Santé"],
+      "description": "Soulage les démangeaisons dûes à des plantes ou piqûres d'insectes.",
+      "name": "Baume contre les démangeaisons",
+      "level": 1,
+      "duration": 8,
+      "color": "violet",
+      "valyria": true,
+      "plants": ["Guimauve"]
+    },
+    {
+      "key": ["appétit"],
+      "categories": ["Santé"],
+      "description": "Potion qui provoque l'appétit. Donne envie de manger. Sert souvent aux personnes qui manque d'appétit et ont des problèmes avec ça.",
+      "name": "Potion qui provoque l'appétit",
+      "level": 1,
+      "duration": 8,
+      "color": "jaune",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Vermifuges", "Vermifuge"],
+      "categories": ["Animaux"],
+      "description": "Potion qui sert de vermifuges. La dose varie en fonction de la taille.",
+      "name": "Potion Vermifuges",
+      "level": 1,
+      "duration": 8,
+      "color": "vert",
+      "valyria": true,
+      "plants": ["Absinthe"]
+    },
+    {
+      "key": ["Coups de soleil", "Soleil", "Coup de soleil"],
+      "categories": ["Utilitaire", "Santé"],
+      "description": "Avant pour s'en protéger, ou après pour calmer l'irritation.",
+      "name": "Baume contre les coups de soleil",
+      "level": 1,
+      "duration": 8,
+      "color": "orange clair",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Dents parfaites", "Dents", "Dent", "Dentifrice"],
+      "categories": ["Utilitaire", "Beauté"],
+      "description": "Belles dents, contre les caries, mais aussi pour une haleine fraîche.",
+      "name": "Dentifrice pour des dents parfaites",
+      "level": 1,
+      "duration": 8,
+      "color": "vert",
+      "valyria": true,
+      "plants": ["Prêle"]
+    },
+    {
+      "key": ["Parasites", "Puces", "Parasite", "Puce"],
+      "categories": ["Animaux"],
+      "description": "Lotion pour les puces et autres parasites sur les animaux.",
+      "name": "Lotion pour les puces et autres parasites",
+      "level": 1,
+      "duration": 8,
+      "color": "jaune",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Courbatures", "Courbature"],
+      "categories": ["Santé"],
+      "description": "Baume contre les courbatures ou tension musculaire. Se masser avec plusieurs fois dans la journée.",
+      "name": "Baume pour courbatures",
+      "level": 1,
+      "duration": 8,
+      "color": "mauve",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Soin de peau"],
+      "categories": ["Beauté"],
+      "description": "Pour avoir une belle et douce peau.",
+      "name": "Baume pour un soin de peau",
+      "level": 1,
+      "duration": 8,
+      "color": "bleu",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Immu"],
+      "categories": ["Santé"],
+      "description": "Potion qui stimule le système immunitaire.",
+      "name": "Potion Immu",
+      "level": 1,
+      "duration": 8,
+      "color": "rouge foncé",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Tics", "Tic"],
+      "categories": ["Animaux"],
+      "description": "Enlever avec une pince avant.",
+      "name": "Lotion contre les tics",
+      "level": 1,
+      "duration": 8,
+      "color": "blanc",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Fièvre"],
+      "categories": ["Santé"],
+      "description": "Potion qui permet de combattre la fièvre.",
+      "name": "Potion contre la fièvre",
+      "level": 1,
+      "duration": 8,
+      "color": "mauve",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Engelures", "Engelure"],
+      "categories": ["Santé"],
+      "description": "Pour les engelures.",
+      "name": "Cataplasme pour les engelures",
+      "level": 1,
+      "duration": 8,
+      "color": "orange",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Sommeil"],
+      "categories": ["Santé"],
+      "description": "Pour garantir un sommeil réparateur.",
+      "name": "Potion du sommeil",
+      "level": 1,
+      "duration": 8,
+      "color": "violet",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Douleur"],
+      "categories": ["Utilitaire", "Santé"],
+      "description": "Potion qui soulage et apaise la douleur. Ressemble à de la morphine.",
+      "name": "Potion contre la douleur",
+      "level": 2,
+      "duration": 15,
+      "color": "rouge éclatant",
+      "valyria": true,
+      "plants": ["Lavande"]
+    },
+    {
+      "key": ["Pugna"],
+      "categories": ["Utilitaire", "Santé"],
+      "description": "Potion qui aide l'organisme à lutter contre l'infection et arrête le développement des microbes.",
+      "name": "Potion Pugna",
+      "level": 2,
+      "duration": 15,
+      "color": "rouge",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Légume"],
+      "categories": ["Utilitaire", "Animaux"],
+      "description": "Potion qui agit sur le système nerveux et réduit sont activité, elle diminue l'irritabilité et calme une personne qui devient ensuite fatiguée. La rendant faible mentalement et physiquement pendant 1 voir 2h. Sert aussi à affaiblir les animaux pour les capturer.",
+      "name": "Potion du légume",
+      "level": 2,
+      "duration": 15,
+      "color": "mauve",
+      "valyria": true,
+      "plants": ["Coquelicot"]
+    },
+    {
+      "key": ["Anémia"],
+      "categories": ["Santé"],
+      "description": "Potion pour l'Anémie, aussi utilisée lors des grands voyages en bateau. En prendre une gorgée tout les jours jusqu'a ce que ça aille mieux.",
+      "name": "Potion Anémia",
+      "level": 2,
+      "duration": 15,
+      "color": "bleu",
+      "valyria": true,
+      "plants": ["Petite pervenche"]
+    },
+    {
+      "key": ["Brûlures", "Brûlure"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "Baume pour soulager et soigner les brûlures cutanées.",
+      "name": "Baume contre les brûlures",
+      "level": 2,
+      "duration": 15,
+      "color": "orange",
+      "valyria": true,
+      "plants": ["Souci"]
+    },
+    {
+      "key": ["Beauté du visage", "Visage"],
+      "categories": ["Beauté"],
+      "description": "Baume pour une plus belle peau, douce et soyeuse.",
+      "name": "Baume beauté du visage",
+      "level": 2,
+      "duration": 15,
+      "color": "kaki",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Otites", "Otite"],
+      "categories": ["Santé"],
+      "description": "A mettre dans l'oreille avec un coton pour soulager et guérir.",
+      "name": "Lotion contre les otites",
+      "level": 2,
+      "duration": 15,
+      "color": "mauve",
+      "valyria": true,
+      "plants": []
+    },
+    {
+      "key": ["Entorse", "Foulure"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "Masser pour soulager la douleur et l'inflammation.",
+      "name": "Baume pour entorse ou foulure",
+      "level": 2,
+      "duration": 15,
+      "color": "blanc",
+      "valyria": true,
+      "plants": ["Pâquerette"]
+    },
+    {
+      "key": ["Contusus"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "Baume pour les contusions, ecchymoses et hématomes, soulage et calme la douleur.",
+      "name": "Baume Contusus",
+      "level": 2,
+      "duration": 15,
+      "color": "cyan",
+      "valyria": true,
+      "plants": ["Hysope"]
+    },
+    {
+      "key": ["Petite blessure", "Blessure"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "Un baume à appliquer sur une coupure ou une entaille, soulage et cicatrise.",
+      "name": "Baume petite blessure",
+      "level": 2,
+      "duration": 15,
+      "color": "pourpre",
+      "valyria": true,
+      "plants": ["Acérola"]
+    },
+    {
+      "key": ["Pulmonis"],
+      "categories": ["Santé"],
+      "description": "Potion pour soigner l'angine, grippe, bronchite ou rhume.",
+      "name": "Potion Pulmonis",
+      "level": 2,
+      "duration": 15,
+      "color": "noir",
+      "valyria": true,
+      "plants": ["Citronnier", "Plantain"]
+    },
+    {
+      "key": ["Convalescence"],
+      "categories": ["Santé"],
+      "description": "Permet de fortifier les malades et leurs corps après le traitement de base.",
+      "name": "Potion de convalescence",
+      "level": 2,
+      "duration": 15,
+      "color": "jaune sombre",
+      "valyria": true,
+      "plants": ["Fenugrec"]
+    },
+    {
+      "key": ["Hémo"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "Potion qui permet de resserrer les tissus, arrêter une hémorragie.",
+      "name": "Potion Hémo",
+      "level": 3,
+      "duration": 24,
+      "color": "pourpre",
+      "valyria": true,
+      "plants": ["Consoude", "Prêle"]
+    },
+    {
+      "key": ["Sanguis"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "Permet de régénérer le sang, de le reconstituer. Avant de le faire boire, mettre l'ADN de la personne ou de l'animal dedans.",
+      "name": "Potion Sanguis",
+      "level": 3,
+      "duration": 24,
+      "color": "orange",
+      "valyria": true,
+      "plants": ["Pissenlit", "Tilleul"]
+    },
+    {
+      "key": ["Jeunesse"],
+      "categories": ["Beauté"],
+      "description": "Baume pour les rides du visage, le rajeunir un peu, en appliquer régulièrement 1 fois par jour.",
+      "name": "Baume pour retrouver sa jeunesse",
+      "level": 1,
+      "duration": 8,
+      "color": "cyan",
+      "valyria": false,
+      "plants": []
+    },
+    {
+      "key": ["Veteris"],
+      "categories": ["Beauté"],
+      "description": "Baume pour cellulite et vergeture.",
+      "name": "Baume Veteris",
+      "level": 1,
+      "duration": 8,
+      "color": "rose",
+      "valyria": false,
+      "plants": []
+    },
+    {
+      "key": ["Chauve"],
+      "categories": ["Beauté"],
+      "description": "Lotion pour arrêter la chute de cheveux. Ou tenter de les retrouver.",
+      "name": "Lotion pour chauve",
+      "level": 1,
+      "duration": 8,
+      "color": "pourpre",
+      "valyria": false,
+      "plants": []
+    },
+    {
+      "key": ["Gargarisme"],
+      "categories": ["Santé"],
+      "description": "Gargarisme pour soigner une blessure, des dents ou gencives dans la bouche.",
+      "name": "Gargarisme de bouche",
+      "level": 2,
+      "duration": 8,
+      "color": "violet",
+      "valyria": false,
+      "plants": ["Sauge officinale"]
+    },
+    {
+      "key": ["Os"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "Potion qui guérit les os cassés, les ressoude et les font repousser. En fonction de la blessure cela met plus ou moins de temps à se soigner.",
+      "name": "Potion de l'os",
+      "level": 2,
+      "duration": 15,
+      "color": "blanc",
+      "valyria": false,
+      "plants": ["Coquillage", "Consoude"]
+    },
+    {
+      "key": ["Anesthésia"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "Potion pour endormir quelqu'un immédiatement, comme un somnifère ou une anesthésie.",
+      "name": "Potion Anesthésia",
+      "level": 2,
+      "duration": 15,
+      "color": "brun",
+      "valyria": false,
+      "plants": ["Houblon", "Marjolaine"]
+    },
+    {
+      "key": ["Venema"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "Potion contre les morsures de serpents ou du poison qui est entré dans notre corps. Qui purifie le sang et débarrasse l'organisme des principes toxiques nuisible à la santé et l'éliminant par la peau par une transpiration importante.",
+      "name": "Potion Venema",
+      "level": 2,
+      "duration": 15,
+      "color": "vert",
+      "valyria": false,
+      "plants": ["Tilleul"]
+    },
+    {
+      "key": ["Injuriam"],
+      "categories": ["Santé", "Utilitaire"],
+      "description": "Un baume à appliquer sur une blessure importante, voir grave, permet de refermer les plaies. Plus efficace si on recoud avant, si la blessure est importante.",
+      "name": "Baume d'injuriam",
+      "level": 3,
+      "duration": 48,
+      "color": "rose-rouge vif",
+      "valyria": false,
+      "plants": ["Plantain", "Souci", "Hysope"]
+    }
+  ]
+}

@@ -62,6 +62,7 @@ typings/
 
 # Configuration files
 src/config/*/
+!src/config/template/
 
 # next.js build output
 .next
